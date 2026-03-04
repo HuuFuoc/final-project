@@ -29,3 +29,5 @@ app.listen(port, () => {
   console.log(`Swagger UI at http://localhost:${port}/api-docs`)
 })
 databaseService.connect()
+
+export default app
