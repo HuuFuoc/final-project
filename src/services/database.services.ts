@@ -1,7 +1,7 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
-import User from '~/models/schemas/User.schema'
-import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import User from '../models/schemas/User.schema'
+import RefreshToken from '../models/schemas/RefreshToken.schema'
 
 dotenv.config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@final-prj.wm3osql.mongodb.net/?retryWrites=true&w=majority`

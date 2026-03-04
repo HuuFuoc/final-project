@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import userService from '~/services/users.services'
+import userService from '../services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   ChangePasswordReqBody,
@@ -9,12 +9,12 @@ import {
   RegisterReqBody,
   TokenPayLoad,
   UpdateMeReqBody
-} from '~/models/requests/User.requests'
-import { ErrorWithStatus } from '~/models/Error'
-import HTTP_STATUS from '~/containts/httpStatus'
-import { USERS_MESSAGES } from '~/containts/messages'
-import { UserVerifyStatus } from '~/containts/enums'
-import { getAccessTokenPayload } from '~/utils/jwt'
+} from '../models/requests/User.requests'
+import { ErrorWithStatus } from '../models/Error'
+import HTTP_STATUS from '../constants/httpStatus'
+import { USERS_MESSAGES } from '../constants/messages'
+import { UserVerifyStatus } from '../constants/enums'
+import { getAccessTokenPayload } from '../utils/jwt'
 
 export const loginController = async (
   req: Request<ParamsDictionary, any, loginReqBody>,
