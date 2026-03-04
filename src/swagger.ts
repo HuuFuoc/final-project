@@ -14,11 +14,11 @@ const swaggerOptions: swaggerJsdoc.Options = {
       {
         url: 'http://localhost:3000',
         description: 'Local server'
+      },
+      {
+        url: 'https://final-project-f2z1.onrender.com',
+        description: 'Production server'
       }
-      // {
-      //   url: 'https://api-server-backend.onrender.com',
-      //   description: 'Production server'
-      // }
     ],
     components: {
       securitySchemes: {
