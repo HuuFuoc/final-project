@@ -1,16 +1,16 @@
 import bcrypt from 'bcryptjs' // Thêm dòng này
-import User from '~/models/schemas/User.schema'
+import User from '../models/schemas/User.schema'
 import databaseService from './database.services'
-import { loginReqBody, RegisterReqBody, UpdateMeReqBody } from '~/models/requests/User.requests'
-import { TokenType, USER_ROLE, UserVerifyStatus } from '~/constants/enums'
-import { signToken } from '~/utils/jwt'
+import { loginReqBody, RegisterReqBody, UpdateMeReqBody } from '../models/requests/User.requests'
+import { TokenType, USER_ROLE, UserVerifyStatus } from '../constants/enums'
+import { signToken } from '../utils/jwt'
 import jwt, { sign } from 'jsonwebtoken'
-import { USERS_MESSAGES } from '~/constants/messages'
-import HTTP_STATUS from '~/constants/httpStatus'
-import { ErrorWithStatus } from '~/models/Error'
-import RefreshToken from '~/models/schemas//RefreshToken.schema'
+import { USERS_MESSAGES } from '../constants/messages'
+import HTTP_STATUS from '../constants/httpStatus'
+import { ErrorWithStatus } from '../models/Error'
+import RefreshToken from '../models/schemas//RefreshToken.schema'
 import { ObjectId } from 'mongodb'
-import { sendSMTPMail } from '~/utils/mailer'
+import { sendSMTPMail } from '../utils/mailer'
 class UserService {
   async register(payload: RegisterReqBody) {
     // Mã hóa mật khẩu trước khi lưu
