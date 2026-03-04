@@ -1,6 +1,7 @@
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
 import { Express } from 'express'
+import path from 'path'
 
 const swaggerOptions: swaggerJsdoc.Options = {
   definition: {
@@ -128,7 +129,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
       }
     ]
   },
-  apis: ['./src/routes/*.ts'] // đảm bảo đúng path file route
+  apis: [path.join(__dirname, 'routes/*.ts')] // absolute path để hoạt động trên Vercel
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
