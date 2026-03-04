@@ -129,7 +129,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
       }
     ]
   },
-  apis: [path.join(__dirname, 'routes/*.ts')] // absolute path để hoạt động trên Vercel
+  apis: [path.join(__dirname, 'routes/*.ts'), path.join(__dirname, 'routes/*.js')] // .ts local, .js on Vercel (compiled)
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
