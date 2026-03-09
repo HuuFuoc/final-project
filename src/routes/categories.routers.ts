@@ -1,5 +1,13 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  createCategoryController,
+  deleteCategoryController,
+  getCategoriesController,
+  getCategoryByIdController,
+  updateCategoryController
+} from '../controllers/categories.controllers'
+import { requireAdmin } from '../middlewares/users.middlewares'
 
 const categoriesRouter = express.Router()
 
@@ -9,17 +17,22 @@ const categoriesRouter = express.Router()
  *   post:
  *     summary: Tạo category
  *     tags: [Category]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
+ *               name:
+ *                 type: string
  *     responses:
- *       200: { description: OK }
+ *       201:
+ *         description: Created
  */
-categoriesRouter.post('/create', wrapAsync((req, res) => res.json({ message: 'OK' })))
+categoriesRouter.post('/create', requireAdmin, wrapAsync(createCategoryController))
 
 /**
  * @openapi
@@ -28,9 +41,10 @@ categoriesRouter.post('/create', wrapAsync((req, res) => res.json({ message: 'OK
  *     summary: Lấy danh sách categories
  *     tags: [Category]
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-categoriesRouter.get('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
+categoriesRouter.get('/', wrapAsync(getCategoriesController))
 
 /**
  * @openapi
@@ -42,11 +56,13 @@ categoriesRouter.get('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *       - in: path
  *         name: categoryId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-categoriesRouter.get('/:categoryId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+categoriesRouter.get('/:categoryId', wrapAsync(getCategoryByIdController))
 
 /**
  * @openapi
@@ -54,37 +70,47 @@ categoriesRouter.get('/:categoryId', wrapAsync((req, res) => res.json({ message:
  *   put:
  *     summary: Cập nhật category
  *     tags: [Category]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: categoryId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
+ *               name:
+ *                 type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-categoriesRouter.put('/:categoryId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+categoriesRouter.put('/:categoryId', requireAdmin, wrapAsync(updateCategoryController))
 
 /**
  * @openapi
  * /api/category/{categoryId}:
  *   delete:
- *     summary: Xóa category
+ *     summary: Xóa category (soft delete)
  *     tags: [Category]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: categoryId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-categoriesRouter.delete('/:categoryId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+categoriesRouter.delete('/:categoryId', requireAdmin, wrapAsync(deleteCategoryController))
 
 export default categoriesRouter

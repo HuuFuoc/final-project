@@ -4,6 +4,7 @@ import { PaymentStatus, PaymentMethod } from '../../constants/enums'
 interface PaymentType {
   _id?: ObjectId
   user_id: ObjectId
+  order_id?: ObjectId
   paymentNo?: string
   status?: PaymentStatus
   amount?: number
@@ -18,6 +19,7 @@ interface PaymentType {
 export default class Payment {
   _id?: ObjectId
   user_id: ObjectId
+  order_id: ObjectId | null
   paymentNo: string
   status: PaymentStatus
   amount: number
@@ -32,6 +34,7 @@ export default class Payment {
     const date = new Date()
     this._id = payment._id || new ObjectId()
     this.user_id = payment.user_id
+    this.order_id = payment.order_id ?? null
     this.paymentNo = payment.paymentNo || ''
     this.status = payment.status ?? PaymentStatus.Pending
     this.amount = payment.amount ?? 0

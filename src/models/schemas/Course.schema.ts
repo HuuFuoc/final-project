@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { CourseStatus, CourseTargetAudience } from '../../constants/enums'
+import { CourseStatus, CourseTargetAudience, RiskLevel } from '../../constants/enums'
 
 interface CourseType {
   _id?: ObjectId
@@ -11,6 +11,9 @@ interface CourseType {
   status?: CourseStatus
   targetAudience?: CourseTargetAudience
   imageUrl?: string
+  imageUrls?: string[]
+  videoUrls?: string[]
+  riskLevel?: RiskLevel
   price: number
   discount?: number
   created_at?: Date
@@ -28,6 +31,9 @@ export default class Course {
   status: CourseStatus
   targetAudience: CourseTargetAudience
   imageUrl: string
+  imageUrls: string[]
+  videoUrls: string[]
+  riskLevel: RiskLevel
   price: number
   discount: number
   created_at: Date
@@ -45,6 +51,9 @@ export default class Course {
     this.status = course.status ?? CourseStatus.Draft
     this.targetAudience = course.targetAudience ?? CourseTargetAudience.All
     this.imageUrl = course.imageUrl || ''
+    this.imageUrls = course.imageUrls ?? []
+    this.videoUrls = course.videoUrls ?? []
+    this.riskLevel = course.riskLevel ?? RiskLevel.Low
     this.price = course.price ?? 0
     this.discount = course.discount ?? 0
     this.created_at = course.created_at || date

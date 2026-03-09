@@ -5,7 +5,7 @@ interface OrderDetailType {
   order_id: ObjectId
   serviceType?: string
   amount?: number
-  transaction_id?: ObjectId
+  transaction_id?: ObjectId | null
   created_at?: Date
   updated_at?: Date
   isDeleted?: boolean

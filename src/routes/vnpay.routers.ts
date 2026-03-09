@@ -2,6 +2,10 @@ import express from 'express'
 import type { ReturnQueryFromVNPay } from 'vnpay'
 import { vnpayInstance, getReturnUrl } from '../config/vnpay'
 import { wrapAsync } from '../utils/handlers'
+import paymentService from '../services/payments.services'
+import { PaymentStatus } from '../constants/enums'
+import { getAccessTokenPayload } from '../utils/jwt'
+import { requireUser } from '../middlewares/users.middlewares'
 
 const vnpayRouter = express.Router()
 
@@ -16,7 +20,8 @@ const vnpayRouter = express.Router()
  *       Môi trường Sandbox - thẻ test NCB 9704198526191432198, OTP 123456.
  *     tags:
  *       - VNPay
- *     security: []
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -24,17 +29,12 @@ const vnpayRouter = express.Router()
  *           schema:
  *             type: object
  *             required:
- *               - amount
- *               - orderId
+ *               - paymentId
  *             properties:
- *               amount:
- *                 type: number
- *                 description: Số tiền thanh toán (VND)
- *                 example: 100000
- *               orderId:
+ *               paymentId:
  *                 type: string
- *                 description: Mã đơn hàng duy nhất (vnp_TxnRef)
- *                 example: ORDER_001
+ *                 description: ID payment đã tạo từ API createPaymentFromOrder
+ *                 example: 69aede540ebe9343b15d4f20
  *               orderInfo:
  *                 type: string
  *                 description: Nội dung thanh toán (không dấu, không ký tự đặc biệt)
@@ -50,7 +50,9 @@ const vnpayRouter = express.Router()
  *                 url:
  *                   type: string
  *                   description: URL redirect sang VNPay
- *                 orderId:
+ *                 paymentId:
+ *                   type: string
+ *                 paymentNo:
  *                   type: string
  *       400:
  *         description: Thiếu amount hoặc orderId
@@ -66,27 +68,45 @@ const vnpayRouter = express.Router()
  */
 vnpayRouter.post(
   '/create-payment-url',
+  requireUser,
   wrapAsync(async (req, res) => {
-    const { amount, orderId, orderInfo } = req.body as {
-      amount?: number
-      orderId?: string
+    const { user_id } = getAccessTokenPayload(req)
+    const { paymentId, orderInfo } = req.body as {
+      paymentId?: string
       orderInfo?: string
     }
-    if (!amount || amount <= 0 || !orderId) {
+    if (!paymentId) {
       return res.status(400).json({
-        message: 'Thiếu amount (VND) hoặc orderId',
-        example: { amount: 100000, orderId: 'ORDER_001', orderInfo: 'Thanh toan don hang' }
+        message: 'Thiếu paymentId',
+        example: { paymentId: '69aede540ebe9343b15d4f20', orderInfo: 'Thanh toan don hang' }
       })
     }
-    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || '127.0.0.1'
+
+    const payment = await paymentService.getPaymentById(paymentId)
+    if (!payment._id || !payment.user_id || String(payment.user_id) !== user_id) {
+      return res.status(403).json({ message: 'Bạn không có quyền thanh toán giao dịch này' })
+    }
+    if (payment.status !== PaymentStatus.Pending) {
+      return res.status(409).json({
+        message: 'Payment không ở trạng thái pending',
+        data: { paymentId, currentStatus: payment.status }
+      })
+    }
+
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || '127.0.0.1'
     const paymentUrl = vnpayInstance.buildPaymentUrl({
-      vnp_Amount: amount,
+      vnp_Amount: payment.amount,
       vnp_IpAddr: clientIp,
       vnp_ReturnUrl: getReturnUrl(),
-      vnp_TxnRef: orderId,
-      vnp_OrderInfo: orderInfo || `Thanh toan don hang ${orderId}`
+      vnp_TxnRef: payment.paymentNo,
+      vnp_OrderInfo: orderInfo || `Thanh toan don hang ${payment.paymentNo}`
     })
-    return res.json({ url: paymentUrl, orderId })
+    return res.json({
+      url: paymentUrl,
+      paymentId: String(payment._id),
+      paymentNo: payment.paymentNo
+    })
   })
 )
 
@@ -133,9 +153,19 @@ vnpayRouter.post(
  */
 vnpayRouter.get(
   '/return',
-  wrapAsync((req, res) => {
+  wrapAsync(async (req, res) => {
     const query = req.query as Record<string, string>
     const verify = vnpayInstance.verifyReturnUrl(query as ReturnQueryFromVNPay)
+
+    const paymentNo = query.vnp_TxnRef
+    if (paymentNo && verify.isVerified) {
+      if (verify.isSuccess) {
+        await paymentService.updatePaymentStatusByPaymentNo(paymentNo, PaymentStatus.Completed)
+      } else {
+        await paymentService.updatePaymentStatusByPaymentNo(paymentNo, PaymentStatus.Failed)
+      }
+    }
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -200,16 +230,26 @@ vnpayRouter.get(
  */
 vnpayRouter.get(
   '/ipn',
-  wrapAsync((req, res) => {
+  wrapAsync(async (req, res) => {
     try {
-      const result = vnpayInstance.verifyIpnCall((req.query as Record<string, string>) as ReturnQueryFromVNPay)
+      const query = req.query as Record<string, string>
+      const result = vnpayInstance.verifyIpnCall(query as ReturnQueryFromVNPay)
+      const paymentNo = String(query.vnp_TxnRef || '')
+
       if (!result.isVerified) {
         return res.status(200).json({ RspCode: '97', Message: 'Invalid signature' })
       }
+
+      if (!paymentNo) {
+        return res.status(200).json({ RspCode: '99', Message: 'Missing vnp_TxnRef' })
+      }
+
       if (result.isSuccess) {
-        // TODO: cập nhật đơn hàng trong DB tại đây (orderId = result.vnp_TxnRef)
+        await paymentService.updatePaymentStatusByPaymentNo(paymentNo, PaymentStatus.Completed)
         return res.status(200).json({ RspCode: '00', Message: 'Confirm Success' })
       }
+
+      await paymentService.updatePaymentStatusByPaymentNo(paymentNo, PaymentStatus.Failed)
       return res.status(200).json({ RspCode: '00', Message: 'Confirm Success' })
     } catch {
       return res.status(200).json({ RspCode: '99', Message: 'Unknow error' })

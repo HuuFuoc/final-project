@@ -14,6 +14,11 @@ import Appointment from '../models/schemas/Appointment.schema'
 import Consultant from '../models/schemas/Consultant.schema'
 import Survey from '../models/schemas/Survey.schema'
 import Transaction from '../models/schemas/Transaction.schema'
+import Cart from '../models/schemas/Cart.schema'
+import Session from '../models/schemas/Session.schema'
+import OrderDetail from '../models/schemas/OrderDetail.schema'
+import OrderLog from '../models/schemas/OrderLog.schema'
+import Enrollment from '../models/schemas/Enrollment.schema'
 
 dotenv.config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@final-prj.wm3osql.mongodb.net/?retryWrites=true&w=majority`
@@ -96,6 +101,21 @@ class DatabaseService {
   }
   get transaction_service_items(): Collection<Document> {
     return this.db.collection<Document>(process.env.DB_TRANSACTION_SERVICE_ITEMS_COLLECTION as string)
+  }
+  get carts(): Collection<Cart> {
+    return this.db.collection<Cart>(process.env.DB_CARTS_COLLECTION || 'carts')
+  }
+  get sessions(): Collection<Session> {
+    return this.db.collection<Session>(process.env.DB_SESSIONS_COLLECTION || 'sessions')
+  }
+  get order_details(): Collection<OrderDetail> {
+    return this.db.collection<OrderDetail>(process.env.DB_ORDER_DETAILS_COLLECTION || 'order_details')
+  }
+  get order_logs(): Collection<OrderLog> {
+    return this.db.collection<OrderLog>(process.env.DB_ORDER_LOGS_COLLECTION || 'order_logs')
+  }
+  get enrollments(): Collection<Enrollment> {
+    return this.db.collection<Enrollment>(process.env.DB_ENROLLMENTS_COLLECTION || 'enrollments')
   }
 }
 

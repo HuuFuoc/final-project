@@ -6,6 +6,7 @@ interface ConsultantType {
   user_id: ObjectId
   fullName?: string
   email?: string
+  phoneNumber?: string
   qualifications?: string[]
   jobTitle?: string
   hireDate?: Date
@@ -21,6 +22,7 @@ export default class Consultant {
   user_id: ObjectId
   fullName: string
   email: string
+  phoneNumber: string
   qualifications: string[]
   jobTitle: string
   hireDate: Date
@@ -36,6 +38,7 @@ export default class Consultant {
     this.user_id = consultant.user_id
     this.fullName = consultant.fullName || ''
     this.email = consultant.email || ''
+    this.phoneNumber = consultant.phoneNumber || ''
     this.qualifications = consultant.qualifications ?? []
     this.jobTitle = consultant.jobTitle || ''
     this.hireDate = consultant.hireDate || date

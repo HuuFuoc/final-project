@@ -8,6 +8,9 @@ interface AppointmentType {
   status?: AppointmentStatus
   note?: string
   scheduledAt?: Date
+  name?: string
+  phone?: string
+  address?: string
   created_at?: Date
   updated_at?: Date
 }
@@ -19,6 +22,9 @@ export default class Appointment {
   status: AppointmentStatus
   note: string
   scheduledAt: Date
+  name: string
+  phone: string
+  address: string
   created_at: Date
   updated_at: Date
 
@@ -30,6 +36,9 @@ export default class Appointment {
     this.status = appointment.status ?? AppointmentStatus.Scheduled
     this.note = appointment.note || ''
     this.scheduledAt = appointment.scheduledAt || date
+    this.name = appointment.name || ''
+    this.phone = appointment.phone || ''
+    this.address = appointment.address || ''
     this.created_at = appointment.created_at || date
     this.updated_at = appointment.updated_at || date
   }

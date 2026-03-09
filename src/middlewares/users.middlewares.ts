@@ -5,6 +5,8 @@ import { USERS_MESSAGES } from '../constants/messages'
 import { ErrorWithStatus } from '../models/Error'
 import HTTP_STATUS from '../constants/httpStatus'
 import { verifyToken } from '../utils/jwt'
+import { USER_ROLE } from '../constants/enums'
+import { getAccessTokenPayload } from '../utils/jwt'
 import dotenv from 'dotenv'
 import { capitalize } from 'lodash'
 import { JsonWebTokenError } from 'jsonwebtoken'
@@ -167,13 +169,13 @@ export const registerValidator = validate(
 export const accessTokenValidator = validate(
   checkSchema(
     {
-      Authorization: {
+      authorization: {
         notEmpty: {
           errorMessage: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED
         },
         custom: {
           options: async (value, { req }) => {
-            const access_token = value.split(' ')[1]
+            const access_token = String(value).match(/^Bearer\s+(.+)$/i)?.[1]
             if (!access_token) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.UNAUTHORIZED,
@@ -281,3 +283,19 @@ export const updateMeValidator = validate(
     ['body']
   )
 )
+
+export const requireUser = accessTokenValidator
+
+export const requireAdmin = [
+  accessTokenValidator,
+  (req: Request, res: Response, next: NextFunction) => {
+    const payload = getAccessTokenPayload(req)
+    if (payload.role !== USER_ROLE.Admin) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.FORBBIDEN,
+        message: 'Admin permission required'
+      })
+    }
+    next()
+  }
+]

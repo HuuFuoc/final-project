@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 interface BlogType {
   _id?: ObjectId
   user_id: ObjectId
+  title?: string
   content?: string
   blogImgUrl?: string
   created_at?: Date
@@ -13,6 +14,7 @@ interface BlogType {
 export default class Blog {
   _id?: ObjectId
   user_id: ObjectId
+  title: string
   content: string
   blogImgUrl: string
   created_at: Date
@@ -23,6 +25,7 @@ export default class Blog {
     const date = new Date()
     this._id = blog._id || new ObjectId()
     this.user_id = blog.user_id
+    this.title = blog.title || ''
     this.content = blog.content || ''
     this.blogImgUrl = blog.blogImgUrl || ''
     this.created_at = blog.created_at || date

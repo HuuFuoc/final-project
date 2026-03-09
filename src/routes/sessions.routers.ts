@@ -1,5 +1,14 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  createSessionController,
+  deleteSessionController,
+  getSessionByIdController,
+  getSessionsByCourseController,
+  getSessionsController,
+  updateSessionController
+} from '../controllers/sessions.controllers'
+import { requireAdmin } from '../middlewares/users.middlewares'
 
 const sessionsRouter = express.Router()
 
@@ -7,24 +16,34 @@ const sessionsRouter = express.Router()
  * @openapi
  * /api/session:
  *   post:
- *     summary: Tạo session
+ *     summary: Tạo session cho course
  *     tags: [Session]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               course_id: { type: string }
- *               user_id: { type: string }
- *               name: { type: string }
- *               slug: { type: string }
- *               content: { type: string }
- *               positionOrder: { type: string }
+ *               course_id:
+ *                 type: string
+ *               user_id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               positionOrder:
+ *                 type: string
  *     responses:
- *       200: { description: OK }
+ *       201:
+ *         description: Created
  */
-sessionsRouter.post('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.post('/', requireAdmin, wrapAsync(createSessionController))
 
 /**
  * @openapi
@@ -33,9 +52,10 @@ sessionsRouter.post('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *     summary: Lấy tất cả sessions
  *     tags: [Session]
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-sessionsRouter.get('/all', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.get('/all', wrapAsync(getSessionsController))
 
 /**
  * @openapi
@@ -47,11 +67,13 @@ sessionsRouter.get('/all', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *       - in: path
  *         name: courseId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-sessionsRouter.get('/course/:courseId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.get('/course/:courseId', wrapAsync(getSessionsByCourseController))
 
 /**
  * @openapi
@@ -63,11 +85,13 @@ sessionsRouter.get('/course/:courseId', wrapAsync((req, res) => res.json({ messa
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-sessionsRouter.get('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.get('/:id', wrapAsync(getSessionByIdController))
 
 /**
  * @openapi
@@ -75,35 +99,44 @@ sessionsRouter.get('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *   put:
  *     summary: Cập nhật session
  *     tags: [Session]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-sessionsRouter.put('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.put('/:id', requireAdmin, wrapAsync(updateSessionController))
 
 /**
  * @openapi
  * /api/session/{id}:
  *   delete:
- *     summary: Xóa session
+ *     summary: Xóa session (soft delete)
  *     tags: [Session]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-sessionsRouter.delete('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+sessionsRouter.delete('/:id', requireAdmin, wrapAsync(deleteSessionController))
 
 export default sessionsRouter

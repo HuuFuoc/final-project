@@ -1,5 +1,12 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  addToCartController,
+  clearCartController,
+  getMyCartController,
+  removeFromCartController
+} from '../controllers/carts.controllers'
+import { requireUser } from '../middlewares/users.middlewares'
 
 const cartsRouter = express.Router()
 
@@ -9,28 +16,36 @@ const cartsRouter = express.Router()
  *   post:
  *     summary: Thêm khóa học vào giỏ
  *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               course_id: { type: string }
+ *               course_id:
+ *                 type: string
  *     responses:
- *       200: { description: OK }
+ *       201:
+ *         description: Created
  */
-cartsRouter.post('/addCourse', wrapAsync((req, res) => res.json({ message: 'OK' })))
+cartsRouter.post('/addCourse', requireUser, wrapAsync(addToCartController))
 
 /**
  * @openapi
  * /api/cart/myCart:
  *   get:
- *     summary: Lấy giỏ hàng của user hiện tại
+ *     summary: Lấy giỏ hàng hiện tại của user
  *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-cartsRouter.get('/myCart', wrapAsync((req, res) => res.json({ message: 'OK' })))
+cartsRouter.get('/myCart', requireUser, wrapAsync(getMyCartController))
 
 /**
  * @openapi
@@ -38,25 +53,32 @@ cartsRouter.get('/myCart', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *   delete:
  *     summary: Xóa item khỏi giỏ
  *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: cartItemId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-cartsRouter.delete('/remove/:cartItemId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+cartsRouter.delete('/remove/:cartItemId', requireUser, wrapAsync(removeFromCartController))
 
 /**
  * @openapi
  * /api/cart/clear:
  *   delete:
- *     summary: Xóa toàn bộ giỏ hàng
+ *     summary: Xóa toàn bộ giỏ hàng (đánh dấu abandoned)
  *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-cartsRouter.delete('/clear', wrapAsync((req, res) => res.json({ message: 'OK' })))
+cartsRouter.delete('/clear', requireUser, wrapAsync(clearCartController))
 
 export default cartsRouter

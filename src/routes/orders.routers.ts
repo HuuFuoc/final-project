@@ -1,5 +1,13 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  createOrderFromCartController,
+  getAllOrdersController,
+  getMyOrdersController,
+  getOrderByIdController,
+  updateOrderStatusController
+} from '../controllers/orders.controllers'
+import { requireAdmin, requireUser } from '../middlewares/users.middlewares'
 
 const ordersRouter = express.Router()
 
@@ -7,19 +15,15 @@ const ordersRouter = express.Router()
  * @openapi
  * /api/order/createOrderFromCart:
  *   post:
- *     summary: Tạo order từ giỏ hàng
+ *     summary: Tạo order từ giỏ hàng hiện tại
  *     tags: [Order]
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               cart_id: { type: string }
+ *     security:
+ *       - bearerAuth: []
  *     responses:
- *       200: { description: OK }
+ *       201:
+ *         description: Created
  */
-ordersRouter.post('/createOrderFromCart', wrapAsync((req, res) => res.json({ message: 'OK' })))
+ordersRouter.post('/createOrderFromCart', requireUser, wrapAsync(createOrderFromCartController))
 
 /**
  * @openapi
@@ -27,21 +31,27 @@ ordersRouter.post('/createOrderFromCart', wrapAsync((req, res) => res.json({ mes
  *   get:
  *     summary: Lấy orders của user hiện tại
  *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-ordersRouter.get('/myOrders', wrapAsync((req, res) => res.json({ message: 'OK' })))
+ordersRouter.get('/myOrders', requireUser, wrapAsync(getMyOrdersController))
 
 /**
  * @openapi
  * /api/order/all:
  *   get:
- *     summary: Lấy tất cả orders
+ *     summary: Lấy tất cả orders (admin)
  *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-ordersRouter.get('/all', wrapAsync((req, res) => res.json({ message: 'OK' })))
+ordersRouter.get('/all', requireAdmin, wrapAsync(getAllOrdersController))
 
 /**
  * @openapi
@@ -49,34 +59,44 @@ ordersRouter.get('/all', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *   get:
  *     summary: Lấy order theo id
  *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: orderId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-ordersRouter.get('/:orderId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+ordersRouter.get('/:orderId', requireUser, wrapAsync(getOrderByIdController))
 
 /**
  * @openapi
  * /api/order/status/{orderId}/{newStatus}:
  *   put:
- *     summary: Cập nhật trạng thái order
+ *     summary: Cập nhật trạng thái order (admin)
  *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: orderId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *       - in: path
  *         name: newStatus
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
+ *           enum: [pending, paid, failed, refunded]
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-ordersRouter.put('/status/:orderId/:newStatus', wrapAsync((req, res) => res.json({ message: 'OK' })))
+ordersRouter.put('/status/:orderId/:newStatus', requireAdmin, wrapAsync(updateOrderStatusController))
 
 export default ordersRouter

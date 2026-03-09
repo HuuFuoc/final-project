@@ -1,5 +1,14 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  createLessonController,
+  deleteLessonController,
+  getLessonByIdController,
+  getLessonsBySessionController,
+  getLessonsPagedController,
+  updateLessonController
+} from '../controllers/lessons.controllers'
+import { requireAdmin } from '../middlewares/users.middlewares'
 
 const lessonsRouter = express.Router()
 
@@ -7,27 +16,42 @@ const lessonsRouter = express.Router()
  * @openapi
  * /api/lesson:
  *   post:
- *     summary: Tạo lesson
+ *     summary: Tạo lesson cho session
  *     tags: [Lesson]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               session_id: { type: string }
- *               course_id: { type: string }
- *               user_id: { type: string }
- *               name: { type: string }
- *               content: { type: string }
- *               lessonType: { type: string }
- *               videoUrl: { type: string }
- *               fullTime: { type: number }
- *               positionOrder: { type: number }
+ *               session_id:
+ *                 type: string
+ *               course_id:
+ *                 type: string
+ *               user_id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               lessonType:
+ *                 type: string
+ *               videoUrl:
+ *                 type: string
+ *               imageUrl:
+ *                 type: string
+ *               fullTime:
+ *                 type: number
+ *               positionOrder:
+ *                 type: number
  *     responses:
- *       200: { description: OK }
+ *       201:
+ *         description: Created
  */
-lessonsRouter.post('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.post('/', requireAdmin, wrapAsync(createLessonController))
 
 /**
  * @openapi
@@ -38,14 +62,17 @@ lessonsRouter.post('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *     parameters:
  *       - in: query
  *         name: page
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
  *       - in: query
  *         name: limit
- *         schema: { type: integer }
+ *         schema:
+ *           type: integer
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-lessonsRouter.get('/paged', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.get('/paged', wrapAsync(getLessonsPagedController))
 
 /**
  * @openapi
@@ -57,11 +84,13 @@ lessonsRouter.get('/paged', wrapAsync((req, res) => res.json({ message: 'OK' }))
  *       - in: path
  *         name: sessionId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-lessonsRouter.get('/session/:sessionId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.get('/session/:sessionId', wrapAsync(getLessonsBySessionController))
 
 /**
  * @openapi
@@ -73,11 +102,13 @@ lessonsRouter.get('/session/:sessionId', wrapAsync((req, res) => res.json({ mess
  *       - in: path
  *         name: lessonId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-lessonsRouter.get('/:lessonId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.get('/:lessonId', wrapAsync(getLessonByIdController))
 
 /**
  * @openapi
@@ -85,35 +116,44 @@ lessonsRouter.get('/:lessonId', wrapAsync((req, res) => res.json({ message: 'OK'
  *   put:
  *     summary: Cập nhật lesson
  *     tags: [Lesson]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: lessonId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-lessonsRouter.put('/:lessonId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.put('/:lessonId', requireAdmin, wrapAsync(updateLessonController))
 
 /**
  * @openapi
  * /api/lesson/{lessonId}:
  *   delete:
- *     summary: Xóa lesson
+ *     summary: Xóa lesson (soft delete)
  *     tags: [Lesson]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: lessonId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: OK
  */
-lessonsRouter.delete('/:lessonId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+lessonsRouter.delete('/:lessonId', requireAdmin, wrapAsync(deleteLessonController))
 
 export default lessonsRouter
