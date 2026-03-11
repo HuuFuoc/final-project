@@ -130,7 +130,8 @@ export const REVIEWS_MESSAGES = {
   RATING_MUST_BE_FROM_1_TO_5: 'Rating must be from 1 to 5',
   INVALID_ID: 'Invalid review id',
   INVALID_COURSE_ID: 'Invalid course id',
-  INVALID_USER_ID: 'Invalid user id'
+  INVALID_USER_ID: 'Invalid user id',
+  INVALID_APPOINTMENT_ID: 'Invalid appointment id'
 } as const
 
 export const CARTS_MESSAGES = {

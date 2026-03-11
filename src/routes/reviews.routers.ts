@@ -1,5 +1,23 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
+import {
+  createAppointmentReviewController,
+  createCourseReviewController,
+  deleteReviewController,
+  getReviewByIdController,
+  getReviewsByCourseController,
+  getReviewsByUserController,
+  getReviewsController,
+  updateReviewController
+} from '../controllers/reviews.controllers'
+import {
+  courseIdValidator,
+  createAppointmentReviewValidator,
+  createCourseReviewValidator,
+  reviewIdValidator,
+  updateReviewValidator,
+  userIdValidator
+} from '../middlewares/reviews.middlewares'
 
 const reviewsRouter = express.Router()
 
@@ -12,7 +30,7 @@ const reviewsRouter = express.Router()
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.get('/', wrapAsync(getReviewsController))
 
 /**
  * @openapi
@@ -33,7 +51,7 @@ reviewsRouter.get('/', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.post('/course', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.post('/course', createCourseReviewValidator, wrapAsync(createCourseReviewController))
 
 /**
  * @openapi
@@ -54,7 +72,7 @@ reviewsRouter.post('/course', wrapAsync((req, res) => res.json({ message: 'OK' }
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.post('/appointment', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.post('/appointment', createAppointmentReviewValidator, wrapAsync(createAppointmentReviewController))
 
 /**
  * @openapi
@@ -70,7 +88,7 @@ reviewsRouter.post('/appointment', wrapAsync((req, res) => res.json({ message: '
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/course/:courseId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.get('/course/:courseId', courseIdValidator, wrapAsync(getReviewsByCourseController))
 
 /**
  * @openapi
@@ -86,7 +104,7 @@ reviewsRouter.get('/course/:courseId', wrapAsync((req, res) => res.json({ messag
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/user/:userId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.get('/user/:userId', userIdValidator, wrapAsync(getReviewsByUserController))
 
 /**
  * @openapi
@@ -102,7 +120,7 @@ reviewsRouter.get('/user/:userId', wrapAsync((req, res) => res.json({ message: '
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/appointment/:appointmentId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+// /api/review/appointment/{appointmentId}  Lấy reviews theo appointment
 
 /**
  * @openapi
@@ -118,7 +136,7 @@ reviewsRouter.get('/appointment/:appointmentId', wrapAsync((req, res) => res.jso
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/consultant/:consultantId', wrapAsync((req, res) => res.json({ message: 'OK' })))
+// /api/review/consultant/{consultantId}  Lấy reviews theo consultant
 
 /**
  * @openapi
@@ -134,7 +152,7 @@ reviewsRouter.get('/consultant/:consultantId', wrapAsync((req, res) => res.json(
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.get('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.get('/:id', reviewIdValidator, wrapAsync(getReviewByIdController))
 
 /**
  * @openapi
@@ -155,7 +173,7 @@ reviewsRouter.get('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.put('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.put('/:id', reviewIdValidator, updateReviewValidator, wrapAsync(updateReviewController))
 
 /**
  * @openapi
@@ -171,6 +189,6 @@ reviewsRouter.put('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
  *     responses:
  *       200: { description: OK }
  */
-reviewsRouter.delete('/:id', wrapAsync((req, res) => res.json({ message: 'OK' })))
+reviewsRouter.delete('/:id', reviewIdValidator, wrapAsync(deleteReviewController))
 
 export default reviewsRouter
