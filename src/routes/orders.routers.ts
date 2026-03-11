@@ -16,12 +16,29 @@ const ordersRouter = express.Router()
  * /api/order/createOrderFromCart:
  *   post:
  *     summary: Tạo order từ giỏ hàng hiện tại
+ *     description: |
+ *       Tạo order từ các item trong giỏ hàng. Sau khi có orderId, gọi tiếp
+ *       `POST /api/payment/createPaymentFromOrder` để tạo payment, rồi
+ *       `POST /api/vnpay/create-payment-url` để lấy URL thanh toán VNPay.
  *     tags: [Order]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               selectedCartItemIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách ID cart item cần đặt hàng (bỏ trống = lấy toàn bộ giỏ)
+ *                 example:
+ *                   - "64f1a2b3c4d5e6f7a8b9c0d1"
  *     responses:
  *       201:
- *         description: Created
+ *         description: Tạo order thành công
  */
 ordersRouter.post('/createOrderFromCart', requireUser, wrapAsync(createOrderFromCartController))
 

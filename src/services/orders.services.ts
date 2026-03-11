@@ -15,7 +15,7 @@ class OrderService {
     return Math.max(0, price - discount)
   }
 
-  async createOrderFromCart(userId: string) {
+  async createOrderFromCart(userId: string, selectedCartItemIds?: string[]) {
     if (!ObjectId.isValid(userId)) {
       throw new ErrorWithStatus({
         status: HTTP_STATUS.BAD_REQUEST,
@@ -23,7 +23,12 @@ class OrderService {
       })
     }
     const userObjectId = new ObjectId(userId)
-    const cartItems = await cartService.getPendingItemsForUser(userObjectId)
+    let cartItems = await cartService.getPendingItemsForUser(userObjectId)
+
+    if (selectedCartItemIds && selectedCartItemIds.length > 0) {
+      const selectedObjectIds = selectedCartItemIds.map((id) => id.toString())
+      cartItems = cartItems.filter((item) => selectedObjectIds.includes((item._id as ObjectId).toString()))
+    }
 
     if (!cartItems.length) {
       throw new ErrorWithStatus({
@@ -112,10 +117,7 @@ class OrderService {
   }
 
   async getAllOrders() {
-    return databaseService.orders
-      .find({})
-      .sort({ created_at: -1 })
-      .toArray()
+    return databaseService.orders.find({}).sort({ created_at: -1 }).toArray()
   }
 
   async getOrderById(orderId: string) {
@@ -139,9 +141,7 @@ class OrderService {
       .find({ order_id: orderObjectId, isDeleted: { $ne: true } })
       .toArray()
 
-    const logs = await databaseService.order_logs
-      .find({ order_id: orderObjectId })
-      .toArray()
+    const logs = await databaseService.order_logs.find({ order_id: orderObjectId }).toArray()
 
     return { order, details, logs }
   }

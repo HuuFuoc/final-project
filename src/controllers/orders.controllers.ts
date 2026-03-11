@@ -6,7 +6,8 @@ import { OrderStatus } from '../constants/enums'
 
 export const createOrderFromCartController = async (req: Request, res: Response) => {
   const { user_id } = getAccessTokenPayload(req)
-  const result = await orderService.createOrderFromCart(user_id)
+  const { selectedCartItemIds } = req.body
+  const result = await orderService.createOrderFromCart(user_id, selectedCartItemIds)
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
     message: 'Order created from cart successfully',
