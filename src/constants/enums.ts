@@ -6,7 +6,8 @@ export enum UserVerifyStatus {
 export enum USER_ROLE {
   Admin,
   Staff,
-  User
+  User,
+  Instructor
 }
 export enum TokenType {
   AccessToken,
