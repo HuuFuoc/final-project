@@ -20,31 +20,18 @@ import paymentsRouter from './routes/payments.routers'
 import programsRouter from './routes/programs.routers'
 import blogsRouter from './routes/blogs.routers'
 import { defaultErrorHandler } from './middlewares/errors.middlewares'
-import cors, { CorsOptions } from 'cors'
 
 const app = express()
 const port = process.env.PORT || 3000
-const defaultAllowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000']
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
-  : defaultAllowedOrigins
+const cors = require('cors')
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  })
+)
 
-const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    // Allow non-browser clients (no Origin header) and configured frontend origins.
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true)
-    }
-    return callback(new Error('Not allowed by CORS'))
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  optionsSuccessStatus: 204
-}
-
-app.use(cors(corsOptions))
-app.options(/.*/, cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 setupSwagger(app)
