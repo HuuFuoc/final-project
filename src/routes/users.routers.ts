@@ -14,6 +14,7 @@ import {
   becomeInstructorController,
   emailVerifyController,
   getMeController,
+  getUserByIdController,
   loginController,
   logoutController,
   registerController,
@@ -306,4 +307,66 @@ userRouter.post('/update-me', accessTokenValidator, updateMeValidator, wrapAsync
  */
 userRouter.post('/become-instructor', accessTokenValidator, becomeInstructorValidator, wrapAsync(becomeInstructorController))
 
+ * /user/{id}:
+ *   get:
+ *     summary: Lấy thông tin người dùng theo ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của người dùng cần lấy thông tin
+ *     responses:
+ *       200:
+ *         description: Lấy thông tin người dùng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Get user by id successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: 64f1a2b3c4d5e6f7a8b9c0d1
+ *                     name:
+ *                       type: string
+ *                       example: Nguyen Van A
+ *                     email:
+ *                       type: string
+ *                       example: nguyenvana@example.com
+ *                     date_of_birth:
+ *                       type: string
+ *                       format: date-time
+ *                     bio:
+ *                       type: string
+ *                     location:
+ *                       type: string
+ *                     website:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     avatar:
+ *                       type: string
+ *                     cover_photo:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [Admin, User, Collector]
+ *                     verify:
+ *                       type: number
+ *                       example: 1
+ *       404:
+ *         description: Không tìm thấy người dùng với ID này
+ *       422:
+ *         description: ID không hợp lệ
+ */
+userRouter.get('/:id', wrapAsync(getUserByIdController))
 export default userRouter

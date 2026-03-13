@@ -294,6 +294,18 @@ class UserService {
       }
     )
   }
+  async getUserById(id: string) {
+    const user = await databaseService.users.findOne({
+      _id: new ObjectId(id)
+    })
+    if (!user) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: USERS_MESSAGES.USER_NOT_FOUND
+      })
+    }
+    return user
+  }
 }
 
 const userService = new UserService()

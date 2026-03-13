@@ -141,6 +141,15 @@ export const becomeInstructorController = async (
   const result = await instructorService.requestBecomeInstructor(user_id, req.body)
   return res.status(HTTP_STATUS.CREATED).json({
     message: INSTRUCTORS_MESSAGES.REQUEST_CREATED,
+export const getUserByIdController = async (
+  req: Request<ParamsDictionary, any, any>,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+  const result = await userService.getUserById(id)
+  return res.status(HTTP_STATUS.OK).json({
+    message: USERS_MESSAGES.GET_USER_BY_ID_SUCCESS,
     data: result
   })
 }
