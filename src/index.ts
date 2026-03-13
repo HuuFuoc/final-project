@@ -11,7 +11,7 @@ import sessionsRouter from './routes/sessions.routers'
 import reviewsRouter from './routes/reviews.routers'
 import cartsRouter from './routes/carts.routers'
 import ordersRouter from './routes/orders.routers'
-import consultantsRouter from './routes/consultants.routers'
+import instructorsRouter from './routes/instructors.routers'
 import appointmentsRouter from './routes/appointments.routers'
 import surveysRouter from './routes/surveys.routers'
 import questionsRouter from './routes/questions.routers'
@@ -45,7 +45,7 @@ app.use('/api/session', sessionsRouter)
 app.use('/api/review', reviewsRouter)
 app.use('/api/cart', cartsRouter)
 app.use('/api/order', ordersRouter)
-app.use('/api/consultant', consultantsRouter)
+app.use('/api/instructor', instructorsRouter)
 app.use('/api/appointments', appointmentsRouter)
 app.use('/api/survey', surveysRouter)
 app.use('/api/question', questionsRouter)

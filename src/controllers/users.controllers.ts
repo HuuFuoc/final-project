@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import userService from '../services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
+  BecomeInstructorReqBody,
   ChangePasswordReqBody,
   EmailVerifyReqQuery,
   loginReqBody,
@@ -12,9 +13,10 @@ import {
 } from '../models/requests/User.requests'
 import { ErrorWithStatus } from '../models/Error'
 import HTTP_STATUS from '../constants/httpStatus'
-import { USERS_MESSAGES } from '../constants/messages'
+import { INSTRUCTORS_MESSAGES, USERS_MESSAGES } from '../constants/messages'
 import { UserVerifyStatus } from '../constants/enums'
 import { getAccessTokenPayload } from '../utils/jwt'
+import instructorService from '../services/instructors.services'
 
 export const loginController = async (
   req: Request<ParamsDictionary, any, loginReqBody>,
@@ -129,6 +131,16 @@ export const updateMeController = async (
     data: result
   })
 }
+
+export const becomeInstructorController = async (
+  req: Request<ParamsDictionary, any, BecomeInstructorReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user_id } = getAccessTokenPayload(req)
+  const result = await instructorService.requestBecomeInstructor(user_id, req.body)
+  return res.status(HTTP_STATUS.CREATED).json({
+    message: INSTRUCTORS_MESSAGES.REQUEST_CREATED,
 export const getUserByIdController = async (
   req: Request<ParamsDictionary, any, any>,
   res: Response,

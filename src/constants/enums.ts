@@ -48,6 +48,12 @@ export enum ConsultantStatus {
   OnLeave = 'on_leave'
 }
 
+export enum InstructorRequestStatus {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected'
+}
+
 export enum AppointmentStatus {
   Scheduled = 'scheduled',
   Completed = 'completed',
