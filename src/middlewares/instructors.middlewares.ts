@@ -1,4 +1,4 @@
-﻿import { checkSchema } from 'express-validator'
+import { checkSchema } from 'express-validator'
 import { validate } from '../utils/validation'
 import { INSTRUCTORS_MESSAGES } from '../constants/messages'
 
@@ -111,7 +111,7 @@ export const reviewInstructorRequestValidator = validate(
       decision: {
         notEmpty: { errorMessage: INSTRUCTORS_MESSAGES.DECISION_IS_REQUIRED },
         isIn: {
-          options: [['approve', 'reject']],
+          options: [['approve', 'accept', 'reject', 'deny', 'denied']],
           errorMessage: INSTRUCTORS_MESSAGES.DECISION_IS_INVALID
         }
       },

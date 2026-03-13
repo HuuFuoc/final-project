@@ -93,7 +93,7 @@ instructorsRouter.get('/:instructorId', instructorIdValidator, wrapAsync(getInst
  *             properties:
  *               decision:
  *                 type: string
- *                 enum: [approve, reject]
+ *                 enum: [approve, accept, reject, deny, denied]
  *               review_note:
  *                 type: string
  *     responses:

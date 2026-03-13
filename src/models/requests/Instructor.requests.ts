@@ -22,7 +22,7 @@ export interface UpdateInstructorReqBody {
 }
 
 export interface ReviewInstructorRequestReqBody {
-  decision: 'approve' | 'reject'
+  decision: 'approve' | 'accept' | 'reject' | 'deny' | 'denied'
   review_note?: string
 }
 

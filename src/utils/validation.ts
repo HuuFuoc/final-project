@@ -17,14 +17,17 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       return next()
     }
     const errorObject = errors.mapped() //hàm này giúp ta lấy lỗi ra dưới dạng object
-    const entityError = new EntityError({ errors: {} })
     for (const key in errorObject) {
       const { msg } = errorObject[key]
-      if (msg instanceof ErrorWithStatus && msg.status != HTTP_STATUS.UNPROCESSABLE_ENTITY) {
-        next(msg)
+      if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
+        return next(msg)
       }
+    }
+
+    const entityError = new EntityError({ errors: {} })
+    for (const key in errorObject) {
       entityError.errors[key] = errorObject[key].msg
     }
-    next(entityError)
+    return next(entityError)
   }
 }
