@@ -194,6 +194,31 @@ export const CONSULTANTS_MESSAGES = {
   INVALID_USER_ID: 'Invalid user id'
 } as const
 
+export const INSTRUCTORS_MESSAGES = {
+  VALIDATION_ERROR: 'Validation error',
+  NOT_FOUND: 'Instructor not found',
+  CREATED: 'Instructor created successfully',
+  UPDATED: 'Instructor updated successfully',
+  DELETED: 'Instructor deleted successfully',
+  LIST_FETCHED: 'Instructors fetched successfully',
+  REQUEST_CREATED: 'Instructor request submitted successfully',
+  REQUEST_ALREADY_PENDING: 'You already have a pending instructor request',
+  REQUEST_ALREADY_REVIEWED: 'This instructor request was already reviewed',
+  REQUEST_NOT_FOUND: 'Instructor request not found',
+  REQUESTS_FETCHED: 'Instructor requests fetched successfully',
+  REQUEST_REVIEWED: 'Instructor request reviewed successfully',
+  FULL_NAME_IS_REQUIRED: 'Full name is required',
+  EMAIL_IS_REQUIRED: 'Email is required',
+  EMAIL_IS_INVALID: 'Email is invalid',
+  STATUS_IS_INVALID: 'Status must be pending, approved or rejected',
+  DECISION_IS_REQUIRED: 'Decision is required',
+  DECISION_IS_INVALID: 'Decision must be approve or reject',
+  INVALID_ID: 'Invalid instructor id',
+  INVALID_REQUEST_ID: 'Invalid instructor request id',
+  INVALID_USER_ID: 'Invalid user id',
+  STAFF_PERMISSION_REQUIRED: 'Staff permission required'
+} as const
+
 export const APPOINTMENTS_MESSAGES = {
   VALIDATION_ERROR: 'Validation error',
   NOT_FOUND: 'Appointment not found',

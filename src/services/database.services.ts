@@ -11,7 +11,8 @@ import Order from '../models/schemas/Order.schema'
 import Payment from '../models/schemas/Payment.schema'
 import Review from '../models/schemas/Review.schema'
 import Appointment from '../models/schemas/Appointment.schema'
-import Consultant from '../models/schemas/Consultant.schema'
+import Instructor from '../models/schemas/Instructor.schema'
+import InstructorRequest from '../models/schemas/InstructorRequest.schema'
 import Survey from '../models/schemas/Survey.schema'
 import Transaction from '../models/schemas/Transaction.schema'
 import Cart from '../models/schemas/Cart.schema'
@@ -75,8 +76,11 @@ class DatabaseService {
   get appointments(): Collection<Appointment> {
     return this.db.collection<Appointment>(process.env.DB_APPOINTMENTS_COLLECTION as string)
   }
-  get consultants(): Collection<Consultant> {
-    return this.db.collection<Consultant>(process.env.DB_CONSULTANTS_COLLECTION as string)
+  get instructors(): Collection<Instructor> {
+    return this.db.collection<Instructor>(process.env.DB_INSTRUCTORS_COLLECTION || process.env.DB_CONSULTANTS_COLLECTION || 'instructors')
+  }
+  get instructor_requests(): Collection<InstructorRequest> {
+    return this.db.collection<InstructorRequest>(process.env.DB_INSTRUCTOR_REQUESTS_COLLECTION || 'instructor_requests')
   }
   get surveys(): Collection<Survey> {
     return this.db.collection<Survey>(process.env.DB_SURVEYS_COLLECTION as string)

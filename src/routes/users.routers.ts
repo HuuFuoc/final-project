@@ -11,6 +11,7 @@ import {
 } from '../middlewares/users.middlewares'
 import {
   changePasswordController,
+  becomeInstructorController,
   emailVerifyController,
   getMeController,
   loginController,
@@ -19,6 +20,7 @@ import {
   updateMeController
 } from '../controllers/users.controllers'
 import { wrapAsync } from '../utils/handlers'
+import { becomeInstructorValidator } from '../middlewares/instructors.middlewares'
 /**
  * @openapi
  * /user/login:
@@ -263,5 +265,45 @@ userRouter.post('/get-me', accessTokenValidator, wrapAsync(getMeController))
  *         description: Dữ liệu không hợp lệ
  */
 userRouter.post('/update-me', accessTokenValidator, updateMeValidator, wrapAsync(updateMeController))
+
+/**
+ * @openapi
+ * /user/become-instructor:
+ *   post:
+ *     summary: User gửi yêu cầu trở thành instructor
+ *     tags:
+ *       - Instructor
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *               qualifications:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               jobTitle:
+ *                 type: string
+ *               profilePicUrl:
+ *                 type: string
+ *               note:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Gửi yêu cầu thành công
+ *       409:
+ *         description: Đã có yêu cầu pending
+ */
+userRouter.post('/become-instructor', accessTokenValidator, becomeInstructorValidator, wrapAsync(becomeInstructorController))
 
 export default userRouter

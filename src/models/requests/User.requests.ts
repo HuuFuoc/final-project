@@ -32,3 +32,13 @@ export interface UpdateMeReqBody {
   name?: string
   date_of_birth?: string
 }
+
+export interface BecomeInstructorReqBody {
+  fullName?: string
+  email?: string
+  phoneNumber?: string
+  qualifications?: string[]
+  jobTitle?: string
+  profilePicUrl?: string
+  note?: string
+}

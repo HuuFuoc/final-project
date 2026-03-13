@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { check, checkSchema, ParamSchema } from 'express-validator'
 import { validate } from '../utils/validation'
-import { USERS_MESSAGES } from '../constants/messages'
+import { INSTRUCTORS_MESSAGES, USERS_MESSAGES } from '../constants/messages'
 import { ErrorWithStatus } from '../models/Error'
 import HTTP_STATUS from '../constants/httpStatus'
 import { verifyToken } from '../utils/jwt'
@@ -294,6 +294,20 @@ export const requireAdmin = [
       throw new ErrorWithStatus({
         status: HTTP_STATUS.FORBBIDEN,
         message: 'Admin permission required'
+      })
+    }
+    next()
+  }
+]
+
+export const requireStaffOrAdmin = [
+  accessTokenValidator,
+  (req: Request, res: Response, next: NextFunction) => {
+    const payload = getAccessTokenPayload(req)
+    if (payload.role !== USER_ROLE.Staff && payload.role !== USER_ROLE.Admin) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.FORBBIDEN,
+        message: INSTRUCTORS_MESSAGES.STAFF_PERMISSION_REQUIRED
       })
     }
     next()
