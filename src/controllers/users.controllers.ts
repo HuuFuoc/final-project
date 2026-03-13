@@ -140,7 +140,9 @@ export const becomeInstructorController = async (
   const { user_id } = getAccessTokenPayload(req)
   const result = await instructorService.requestBecomeInstructor(user_id, req.body)
   return res.status(HTTP_STATUS.CREATED).json({
-    message: INSTRUCTORS_MESSAGES.REQUEST_CREATED,
+    message: INSTRUCTORS_MESSAGES.REQUEST_CREATED
+  })
+}
 export const getUserByIdController = async (
   req: Request<ParamsDictionary, any, any>,
   res: Response,

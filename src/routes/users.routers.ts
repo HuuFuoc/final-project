@@ -305,8 +305,14 @@ userRouter.post('/update-me', accessTokenValidator, updateMeValidator, wrapAsync
  *       409:
  *         description: Đã có yêu cầu pending
  */
-userRouter.post('/become-instructor', accessTokenValidator, becomeInstructorValidator, wrapAsync(becomeInstructorController))
-
+userRouter.post(
+  '/become-instructor',
+  accessTokenValidator,
+  becomeInstructorValidator,
+  wrapAsync(becomeInstructorController)
+)
+/**
+ * @openapi
  * /user/{id}:
  *   get:
  *     summary: Lấy thông tin người dùng theo ID
