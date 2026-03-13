@@ -55,7 +55,7 @@ export default class User {
     this.updated_at = user.updated_at || date
     this.email_verify_token = user.email_verify_token || ''
     this.forgot_password_token = user.forgot_password_token || ''
-    this.verify = user.verify || UserVerifyStatus.Unverified
+    this.verify = user.verify ?? UserVerifyStatus.Unverified
 
     this.bio = user.bio || ''
     this.location = user.location || ''
@@ -63,6 +63,6 @@ export default class User {
     this.username = user.username || ''
     this.avatar = user.avatar || ''
     this.cover_photo = user.cover_photo || ''
-    this.role = user.role || USER_ROLE.User
+    this.role = user.role ?? USER_ROLE.User
   }
 }

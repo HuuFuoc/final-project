@@ -170,9 +170,6 @@ export const accessTokenValidator = validate(
   checkSchema(
     {
       authorization: {
-        notEmpty: {
-          errorMessage: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED
-        },
         custom: {
           options: async (value, { req }) => {
             const access_token = String(value).match(/^Bearer\s+(.+)$/i)?.[1]
@@ -206,11 +203,14 @@ export const refreshTokenValidator = validate(
   checkSchema(
     {
       refresh_token: {
-        notEmpty: {
-          errorMessage: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED
-        },
         custom: {
           options: async (values, { req }) => {
+            if (!values) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.UNAUTHORIZED,
+                message: USERS_MESSAGES.REFRESH_TOKEN_IS_REQUIRED
+              })
+            }
             try {
               const decode_refresh_token = await verifyToken({
                 token: values,
@@ -304,7 +304,15 @@ export const requireStaffOrAdmin = [
   accessTokenValidator,
   (req: Request, res: Response, next: NextFunction) => {
     const payload = getAccessTokenPayload(req)
-    if (payload.role !== USER_ROLE.Staff && payload.role !== USER_ROLE.Admin) {
+    const role = payload.role as USER_ROLE | string | number
+    const normalizedRole = typeof role === 'string' ? role.toLowerCase() : role
+    const isStaffOrAdmin =
+      normalizedRole === USER_ROLE.Staff ||
+      normalizedRole === USER_ROLE.Admin ||
+      normalizedRole === 'staff' ||
+      normalizedRole === 'admin'
+
+    if (!isStaffOrAdmin) {
       throw new ErrorWithStatus({
         status: HTTP_STATUS.FORBBIDEN,
         message: INSTRUCTORS_MESSAGES.STAFF_PERMISSION_REQUIRED

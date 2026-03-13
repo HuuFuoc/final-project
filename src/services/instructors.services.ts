@@ -14,6 +14,10 @@ import {
 import { INSTRUCTORS_MESSAGES, USERS_MESSAGES } from '../constants/messages'
 
 class InstructorService {
+  private isApprovalDecision(decision: ReviewInstructorRequestReqBody['decision']) {
+    return decision === 'approve' || decision === 'accept'
+  }
+
   async listInstructors() {
     return databaseService.instructors.find({}).sort({ created_at: -1 }).toArray()
   }
@@ -136,7 +140,7 @@ class InstructorService {
       })
     }
 
-    const shouldApprove = payload.decision === 'approve'
+    const shouldApprove = this.isApprovalDecision(payload.decision)
 
     if (shouldApprove) {
       await databaseService.users.updateOne(

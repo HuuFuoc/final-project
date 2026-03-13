@@ -213,11 +213,11 @@ export const INSTRUCTORS_MESSAGES = {
   EMAIL_IS_INVALID: 'Email is invalid',
   STATUS_IS_INVALID: 'Status must be pending, approved or rejected',
   DECISION_IS_REQUIRED: 'Decision is required',
-  DECISION_IS_INVALID: 'Decision must be approve or reject',
+  DECISION_IS_INVALID: 'Decision must be approve/accept or reject/deny',
   INVALID_ID: 'Invalid instructor id',
   INVALID_REQUEST_ID: 'Invalid instructor request id',
   INVALID_USER_ID: 'Invalid user id',
-  STAFF_PERMISSION_REQUIRED: 'Staff permission required'
+  STAFF_PERMISSION_REQUIRED: 'Staff or admin permission required'
 } as const
 
 export const APPOINTMENTS_MESSAGES = {
