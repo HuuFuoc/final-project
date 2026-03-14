@@ -290,10 +290,10 @@ export const requireAdmin = [
   accessTokenValidator,
   (req: Request, res: Response, next: NextFunction) => {
     const payload = getAccessTokenPayload(req)
-    if (payload.role !== USER_ROLE.Admin) {
+    if (payload.role !== USER_ROLE.Admin && payload.role !== USER_ROLE.Instructor) {
       throw new ErrorWithStatus({
         status: HTTP_STATUS.FORBBIDEN,
-        message: 'Admin permission required'
+        message: 'Admin or Instructor permission required'
       })
     }
     next()
