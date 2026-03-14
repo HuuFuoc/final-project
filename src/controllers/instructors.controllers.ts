@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express'
+import { Request, Response } from 'express'
 import HTTP_STATUS from '../constants/httpStatus'
 import instructorService from '../services/instructors.services'
 import { getAccessTokenPayload } from '../utils/jwt'
@@ -42,8 +42,9 @@ export const reviewInstructorRequestController = async (
   res: Response
 ) => {
   const { user_id } = getAccessTokenPayload(req)
-  const { requestId } = req.params
-  const result = await instructorService.reviewInstructorRequest(requestId, user_id, req.body)
+  const requestId = (req.params as { requestId: string }).requestId
+  const payload = req.body ?? {}
+  const result = await instructorService.reviewInstructorRequest(requestId, user_id, payload)
 
   res.status(HTTP_STATUS.OK).json({
     success: true,
@@ -74,6 +75,37 @@ export const deleteInstructorController = async (req: Request<{ instructorId: st
     success: true,
     message: INSTRUCTORS_MESSAGES.DELETED,
     data: null
+  })
+}
+
+export const getOrderHistoryController = async (req: Request, res: Response) => {
+  const { user_id } = getAccessTokenPayload(req)
+  const page = req.query.page as string | undefined
+  const limit = req.query.limit as string | undefined
+  const courseId = req.query.courseId as string | undefined
+  const fromDate = req.query.fromDate as string | undefined
+  const toDate = req.query.toDate as string | undefined
+  const result = await instructorService.getOrderHistory(user_id, {
+    page: page ? parseInt(page, 10) : undefined,
+    limit: limit ? parseInt(limit, 10) : undefined,
+    courseId,
+    fromDate,
+    toDate
+  })
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: 'Get instructor order history successfully',
+    data: result
+  })
+}
+
+export const getCourseSalesSummaryController = async (req: Request, res: Response) => {
+  const { user_id } = getAccessTokenPayload(req)
+  const result = await instructorService.getCourseSalesSummary(user_id)
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: 'Get instructor course sales summary successfully',
+    data: result
   })
 }
 

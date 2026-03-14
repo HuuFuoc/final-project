@@ -1,10 +1,12 @@
-﻿import express from 'express'
+import express from 'express'
 import { wrapAsync } from '../utils/handlers'
 import {
   deleteInstructorController,
+  getCourseSalesSummaryController,
   getInstructorByIdController,
   getInstructorsController,
   getInstructorRequestsController,
+  getOrderHistoryController,
   reviewInstructorRequestController,
   updateInstructorController
 } from '../controllers/instructors.controllers'
@@ -15,7 +17,7 @@ import {
   reviewInstructorRequestValidator,
   updateInstructorValidator
 } from '../middlewares/instructors.middlewares'
-import { requireStaffOrAdmin } from '../middlewares/users.middlewares'
+import { requireStaffOrAdmin, requireUser } from '../middlewares/users.middlewares'
 
 const instructorsRouter = express.Router()
 
@@ -29,6 +31,48 @@ const instructorsRouter = express.Router()
  *       200: { description: OK }
  */
 instructorsRouter.get('/', wrapAsync(getInstructorsController))
+
+/**
+ * @openapi
+ * /api/instructor/order-history:
+ *   get:
+ *     summary: Lịch sử đơn hàng các khóa học đã bán (instructor đăng nhập)
+ *     tags: [Instructor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: courseId
+ *         schema: { type: string }
+ *       - in: query
+ *         name: fromDate
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: toDate
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200: { description: OK }
+ */
+instructorsRouter.get('/order-history', requireUser, wrapAsync(getOrderHistoryController))
+
+/**
+ * @openapi
+ * /api/instructor/course-sales-summary:
+ *   get:
+ *     summary: Tổng hợp doanh thu theo từng khóa học của instructor đăng nhập
+ *     tags: [Instructor]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: OK }
+ */
+instructorsRouter.get('/course-sales-summary', requireUser, wrapAsync(getCourseSalesSummaryController))
 
 /**
  * @openapi

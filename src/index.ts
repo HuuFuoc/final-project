@@ -26,8 +26,9 @@ const port = process.env.PORT || 3000
 const cors = require('cors')
 app.use(
   cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: true, // reflect request origin (required when credentials: true)
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   })
 )

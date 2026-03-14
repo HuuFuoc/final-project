@@ -1,10 +1,10 @@
-﻿import { ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { ErrorWithStatus } from '../models/Error'
 import HTTP_STATUS from '../constants/httpStatus'
 import databaseService from './database.services'
 import Instructor from '../models/schemas/Instructor.schema'
 import InstructorRequest from '../models/schemas/InstructorRequest.schema'
-import { InstructorRequestStatus, USER_ROLE } from '../constants/enums'
+import { InstructorRequestStatus, OrderStatus, USER_ROLE } from '../constants/enums'
 import {
   BecomeInstructorReqBody,
   GetInstructorRequestsQuery,
@@ -121,6 +121,9 @@ class InstructorService {
       })
     }
 
+    const decision = payload?.decision
+    const shouldApprove = this.isApprovalDecision(decision)
+
     const requestObjectId = new ObjectId(requestId)
     const reviewerObjectId = new ObjectId(reviewerId)
 
@@ -140,11 +143,14 @@ class InstructorService {
       })
     }
 
-    const shouldApprove = this.isApprovalDecision(payload.decision)
+    const applicantUserId =
+      instructorRequest.user_id instanceof ObjectId
+        ? instructorRequest.user_id
+        : new ObjectId(String(instructorRequest.user_id))
 
     if (shouldApprove) {
       await databaseService.users.updateOne(
-        { _id: instructorRequest.user_id },
+        { _id: applicantUserId },
         {
           $set: {
             role: USER_ROLE.Instructor,
@@ -154,36 +160,42 @@ class InstructorService {
       )
 
       const existingInstructor = await databaseService.instructors.findOne({
-        user_id: instructorRequest.user_id
+        user_id: applicantUserId
       })
+
+      const fullName = instructorRequest.fullName ?? ''
+      const email = instructorRequest.email ?? ''
+      const phoneNumber = instructorRequest.phoneNumber ?? ''
+      const qualifications = Array.isArray(instructorRequest.qualifications) ? instructorRequest.qualifications : []
+      const jobTitle = instructorRequest.jobTitle ?? ''
+      const profilePicUrl = instructorRequest.profilePicUrl ?? ''
 
       if (existingInstructor) {
         await databaseService.instructors.updateOne(
           { _id: existingInstructor._id },
           {
             $set: {
-              fullName: instructorRequest.fullName,
-              email: instructorRequest.email,
-              phoneNumber: instructorRequest.phoneNumber,
-              qualifications: instructorRequest.qualifications,
-              jobTitle: instructorRequest.jobTitle,
-              profilePicUrl: instructorRequest.profilePicUrl,
+              fullName,
+              email,
+              phoneNumber,
+              qualifications,
+              jobTitle,
+              profilePicUrl,
               updated_at: new Date()
             }
           }
         )
       } else {
-        await databaseService.instructors.insertOne(
-          new Instructor({
-            user_id: instructorRequest.user_id,
-            fullName: instructorRequest.fullName,
-            email: instructorRequest.email,
-            phoneNumber: instructorRequest.phoneNumber,
-            qualifications: instructorRequest.qualifications,
-            jobTitle: instructorRequest.jobTitle,
-            profilePicUrl: instructorRequest.profilePicUrl
-          })
-        )
+        const newInstructor = new Instructor({
+          user_id: applicantUserId,
+          fullName,
+          email,
+          phoneNumber,
+          qualifications,
+          jobTitle,
+          profilePicUrl
+        })
+        await databaseService.instructors.insertOne(newInstructor)
       }
     }
 
@@ -196,13 +208,14 @@ class InstructorService {
           status: nextStatus,
           reviewed_by: reviewerObjectId,
           reviewed_at: new Date(),
-          review_note: payload.review_note?.trim() || '',
+          review_note: (payload?.review_note && String(payload.review_note).trim()) || '',
           updated_at: new Date()
         }
       }
     )
 
-    return databaseService.instructor_requests.findOne({ _id: requestObjectId })
+    const updated = await databaseService.instructor_requests.findOne({ _id: requestObjectId })
+    return updated
   }
 
   async updateInstructor(instructorId: string, payload: UpdateInstructorReqBody) {
@@ -245,6 +258,292 @@ class InstructorService {
     ])
 
     return true
+  }
+
+  /**
+   * Order history for instructor: orders of courses they own (course.user_id = instructorId).
+   * Only paid orders; price/discount from cart then course; commissionRate 50%, earnedAmount = finalPrice * 0.5.
+   */
+  async getOrderHistory(
+    instructorId: string,
+    opts: { page?: number; limit?: number; courseId?: string; fromDate?: string; toDate?: string }
+  ) {
+    if (!ObjectId.isValid(instructorId)) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: USERS_MESSAGES.INVALID_USER_ID
+      })
+    }
+    const instructorObjectId = new ObjectId(instructorId)
+    const page = Math.max(1, opts.page ?? 1)
+    const limit = Math.min(100, Math.max(1, opts.limit ?? 10))
+    const skip = (page - 1) * limit
+
+    if (opts.courseId && !ObjectId.isValid(opts.courseId)) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: 'Invalid courseId'
+      })
+    }
+    let fromDate: Date | null = null
+    let toDate: Date | null = null
+    if (opts.fromDate) {
+      fromDate = new Date(opts.fromDate)
+      if (Number.isNaN(fromDate.getTime())) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid fromDate'
+        })
+      }
+    }
+    if (opts.toDate) {
+      toDate = new Date(opts.toDate)
+      if (Number.isNaN(toDate.getTime())) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid toDate'
+        })
+      }
+    }
+
+    const ordersCol = process.env.DB_ORDERS_COLLECTION || 'orders'
+    const coursesCol = process.env.DB_COURSES_COLLECTION || 'courses'
+    const cartsCol = process.env.DB_CARTS_COLLECTION || 'carts'
+
+    const pipeline: any[] = [
+      {
+        $lookup: {
+          from: ordersCol,
+          localField: 'order_id',
+          foreignField: '_id',
+          as: 'orderDoc'
+        }
+      },
+      { $unwind: '$orderDoc' },
+      { $match: { 'orderDoc.status': OrderStatus.Paid } },
+      {
+        $lookup: {
+          from: coursesCol,
+          localField: 'course_id',
+          foreignField: '_id',
+          as: 'courseDoc'
+        }
+      },
+      { $unwind: '$courseDoc' },
+      { $match: { 'courseDoc.user_id': instructorObjectId } },
+      {
+        $lookup: {
+          from: cartsCol,
+          localField: 'cart_id',
+          foreignField: '_id',
+          as: 'cartDoc'
+        }
+      },
+      {
+        $addFields: {
+          cartDoc: { $arrayElemAt: ['$cartDoc', 0] }
+        }
+      },
+      {
+        $addFields: {
+          price: { $ifNull: ['$cartDoc.price', '$courseDoc.price'] },
+          discount: { $ifNull: ['$cartDoc.discount', '$courseDoc.discount'] }
+        }
+      },
+      {
+        $addFields: {
+          discount: { $ifNull: ['$discount', 0] },
+          price: { $ifNull: ['$price', 0] }
+        }
+      },
+      {
+        $addFields: {
+          finalPrice: { $max: [0, { $subtract: ['$price', '$discount'] }] },
+          commissionRate: 50,
+          orderDate: '$orderDoc.orderDate',
+          purchasedAt: '$orderDoc.created_at'
+        }
+      },
+      {
+        $addFields: {
+          earnedAmount: { $multiply: ['$finalPrice', 0.5] }
+        }
+      }
+    ]
+
+    if (opts.courseId) {
+      pipeline.push({ $match: { course_id: new ObjectId(opts.courseId) } })
+    }
+    if (fromDate) {
+      pipeline.push({ $match: { orderDate: { $gte: fromDate } } })
+    }
+    if (toDate) {
+      pipeline.push({ $match: { orderDate: { $lte: toDate } } })
+    }
+
+    const countPipeline = [...pipeline, { $count: 'total' }]
+    const sortAndPagePipeline = [
+      ...pipeline,
+      { $sort: { orderDate: -1 } },
+      {
+        $facet: {
+          totalCount: [{ $count: 'count' }],
+          items: [{ $skip: skip }, { $limit: limit }]
+        }
+      }
+    ]
+
+    const [countResult, dataResult] = await Promise.all([
+      databaseService.order_logs.aggregate(countPipeline).toArray(),
+      databaseService.order_logs.aggregate(sortAndPagePipeline).toArray()
+    ])
+
+    const totalItems = countResult[0]?.total ?? 0
+    const facet = dataResult[0] || { totalCount: [{ count: 0 }], items: [] }
+    const items = (facet.items || []).map((row: any) => ({
+      orderId: row.order_id?.toString(),
+      courseId: row.course_id?.toString(),
+      courseName: row.courseDoc?.name,
+      buyerId: row.user_id?.toString(),
+      price: row.price ?? 0,
+      discount: row.discount ?? 0,
+      finalPrice: row.finalPrice ?? 0,
+      commissionRate: row.commissionRate ?? 50,
+      earnedAmount: row.earnedAmount ?? 0,
+      orderDate: row.orderDate,
+      purchasedAt: row.purchasedAt
+    }))
+
+    const fullSummaryRevenue = await databaseService.order_logs
+      .aggregate([
+        ...pipeline,
+        { $group: { _id: null, totalRevenue: { $sum: '$finalPrice' }, totalEarned: { $sum: '$earnedAmount' }, totalOrders: { $sum: 1 } } }
+      ])
+      .toArray()
+    const summaryRow = fullSummaryRevenue[0]
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit) || 1
+      },
+      summary: {
+        totalOrders: summaryRow?.totalOrders ?? 0,
+        totalRevenue: summaryRow?.totalRevenue ?? 0,
+        totalEarned: summaryRow?.totalEarned ?? 0
+      }
+    }
+  }
+
+  /**
+   * Course sales summary for instructor: aggregate by course for courses they own.
+   */
+  async getCourseSalesSummary(instructorId: string) {
+    if (!ObjectId.isValid(instructorId)) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: USERS_MESSAGES.INVALID_USER_ID
+      })
+    }
+    const instructorObjectId = new ObjectId(instructorId)
+    const ordersCol = process.env.DB_ORDERS_COLLECTION || 'orders'
+    const coursesCol = process.env.DB_COURSES_COLLECTION || 'courses'
+    const cartsCol = process.env.DB_CARTS_COLLECTION || 'carts'
+
+    const pipeline: any[] = [
+      {
+        $lookup: {
+          from: ordersCol,
+          localField: 'order_id',
+          foreignField: '_id',
+          as: 'orderDoc'
+        }
+      },
+      { $unwind: '$orderDoc' },
+      { $match: { 'orderDoc.status': OrderStatus.Paid } },
+      {
+        $lookup: {
+          from: coursesCol,
+          localField: 'course_id',
+          foreignField: '_id',
+          as: 'courseDoc'
+        }
+      },
+      { $unwind: '$courseDoc' },
+      { $match: { 'courseDoc.user_id': instructorObjectId } },
+      {
+        $lookup: {
+          from: cartsCol,
+          localField: 'cart_id',
+          foreignField: '_id',
+          as: 'cartDoc'
+        }
+      },
+      {
+        $addFields: {
+          cartDoc: { $arrayElemAt: ['$cartDoc', 0] }
+        }
+      },
+      {
+        $addFields: {
+          price: { $ifNull: ['$cartDoc.price', '$courseDoc.price'] },
+          discount: { $ifNull: ['$cartDoc.discount', '$courseDoc.discount'] }
+        }
+      },
+      {
+        $addFields: {
+          discount: { $ifNull: ['$discount', 0] },
+          price: { $ifNull: ['$price', 0] }
+        }
+      },
+      {
+        $addFields: {
+          finalPrice: { $max: [0, { $subtract: ['$price', '$discount'] }] },
+          earnedAmount: { $multiply: [{ $max: [0, { $subtract: ['$price', '$discount'] }] }, 0.5] }
+        }
+      },
+      {
+        $group: {
+          _id: '$course_id',
+          courseName: { $first: '$courseDoc.name' },
+          totalOrders: { $sum: 1 },
+          totalRevenue: { $sum: '$finalPrice' },
+          totalEarned: { $sum: '$earnedAmount' }
+        }
+      },
+      { $sort: { totalRevenue: -1 } }
+    ]
+
+    const items = await databaseService.order_logs.aggregate(pipeline).toArray()
+
+    const summary = items.reduce(
+      (acc, row) => ({
+        totalCoursesSold: acc.totalCoursesSold + 1,
+        totalOrders: acc.totalOrders + (row.totalOrders || 0),
+        totalRevenue: acc.totalRevenue + (row.totalRevenue || 0),
+        totalEarned: acc.totalEarned + (row.totalEarned || 0)
+      }),
+      { totalCoursesSold: 0, totalOrders: 0, totalRevenue: 0, totalEarned: 0 }
+    )
+
+    return {
+      items: items.map((row: any) => ({
+        courseId: row._id?.toString(),
+        courseName: row.courseName,
+        totalOrders: row.totalOrders ?? 0,
+        totalRevenue: row.totalRevenue ?? 0,
+        totalEarned: row.totalEarned ?? 0
+      })),
+      summary: {
+        totalCoursesSold: summary.totalCoursesSold,
+        totalOrders: summary.totalOrders,
+        totalRevenue: summary.totalRevenue,
+        totalEarned: summary.totalEarned
+      }
+    }
   }
 }
 
