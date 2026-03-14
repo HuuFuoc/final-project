@@ -20,6 +20,7 @@ import Session from '../models/schemas/Session.schema'
 import OrderDetail from '../models/schemas/OrderDetail.schema'
 import OrderLog from '../models/schemas/OrderLog.schema'
 import Enrollment from '../models/schemas/Enrollment.schema'
+import Blog from '../models/schemas/Blog.schema'
 
 dotenv.config()
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@final-prj.wm3osql.mongodb.net/?retryWrites=true&w=majority`
@@ -120,6 +121,9 @@ class DatabaseService {
   }
   get enrollments(): Collection<Enrollment> {
     return this.db.collection<Enrollment>(process.env.DB_ENROLLMENTS_COLLECTION || 'enrollments')
+  }
+  get blogs(): Collection<Blog> {
+    return this.db.collection<Blog>(process.env.DB_BLOGS_COLLECTION || 'blogs')
   }
 }
 

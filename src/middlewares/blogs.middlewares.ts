@@ -34,3 +34,15 @@ export const blogIdValidator = validate(
     ['params']
   )
 )
+
+export const blogUserIdValidator = validate(
+  checkSchema(
+    {
+      userId: {
+        notEmpty: { errorMessage: BLOGS_MESSAGES.INVALID_USER_ID },
+        isMongoId: { errorMessage: BLOGS_MESSAGES.INVALID_USER_ID }
+      }
+    },
+    ['params']
+  )
+)
