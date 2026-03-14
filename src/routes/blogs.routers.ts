@@ -48,7 +48,7 @@ blogsRouter.post('/create', requireStaffOrAdmin, createBlogValidator, wrapAsync(
  *     responses:
  *       200: { description: OK }
  */
-blogsRouter.get('/', requireStaffOrAdmin, wrapAsync(getBlogsController))
+blogsRouter.get('/', wrapAsync(getBlogsController))
 
 /**
  * @openapi
@@ -84,7 +84,7 @@ blogsRouter.get('/user/:userId', requireStaffOrAdmin, blogUserIdValidator, wrapA
  *     responses:
  *       200: { description: OK }
  */
-blogsRouter.get('/:id', requireStaffOrAdmin, blogIdValidator, wrapAsync(getBlogByIdController))
+blogsRouter.get('/:id', blogIdValidator, wrapAsync(getBlogByIdController))
 
 /**
  * @openapi
