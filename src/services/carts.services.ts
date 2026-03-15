@@ -8,9 +8,10 @@ import { CartStatus, CourseStatus } from '../constants/enums'
 
 class CartService {
   private computeItemAmount(cart: { price?: number; discount?: number }) {
-    // TODO: hiện đang hiểu discount là số tiền giảm trực tiếp, không phải %
-    const discount = cart.discount ?? 0
-    return Math.max(0, (cart.price ?? 0) - discount)
+    const price = cart.price ?? 0
+    const discountPercent = Math.min(100, Math.max(0, cart.discount ?? 0))
+    const discountAmount = (price * discountPercent) / 100
+    return Math.max(0, price - discountAmount)
   }
 
   async addCourseToCart(userId: string, courseId: string) {
