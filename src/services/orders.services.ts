@@ -11,8 +11,9 @@ import { OrderStatus } from '../constants/enums'
 
 class OrderService {
   private computeItemAmount(price: number, discount: number) {
-    // TODO: discount hiện hiểu là số tiền giảm trực tiếp
-    return Math.max(0, price - discount)
+    const discountPercent = Math.min(100, Math.max(0, discount))
+    const discountAmount = (price * discountPercent) / 100
+    return Math.max(0, price - discountAmount)
   }
 
   async createOrderFromCart(userId: string, selectedCartItemIds?: string[]) {
