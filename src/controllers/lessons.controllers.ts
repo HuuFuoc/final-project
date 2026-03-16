@@ -2,10 +2,19 @@ import { Request, Response } from 'express'
 import lessonService from '../services/lessons.services'
 import HTTP_STATUS from '../constants/httpStatus'
 
+const pickFirstNonEmptyString = (...values: unknown[]) => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim() !== '') {
+      return value
+    }
+  }
+  return undefined
+}
+
 const normalizeLessonPayload = (body: Record<string, any>) => {
   const normalized = { ...body }
-  normalized.imageUrl = body.imageUrl ?? body.image ?? body.thumbnail ?? body.image_url
-  normalized.videoUrl = body.videoUrl ?? body.video ?? body.video_url
+  normalized.imageUrl = pickFirstNonEmptyString(body.imageUrl, body.image, body.thumbnail, body.image_url)
+  normalized.videoUrl = pickFirstNonEmptyString(body.videoUrl, body.video, body.video_url)
 
   if (normalized.fullTime !== undefined) {
     const parsed = Number(normalized.fullTime)
