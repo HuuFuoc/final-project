@@ -51,6 +51,13 @@ sessionsRouter.post('/', requireAdmin, wrapAsync(createSessionController))
  *   get:
  *     summary: Lấy tất cả sessions
  *     tags: [Session]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Lọc sessions theo ID người tạo
  *     responses:
  *       200:
  *         description: OK

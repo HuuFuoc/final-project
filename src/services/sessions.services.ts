@@ -39,11 +39,18 @@ class SessionService {
     return { ...session, _id: result.insertedId }
   }
 
-  async listAllSessions() {
-    return databaseService.sessions
-      .find({ isDeleted: false })
-      .sort({ created_at: -1 })
-      .toArray()
+  async listAllSessions(userId?: string) {
+    const filter: any = { isDeleted: false }
+    if (userId) {
+      if (!ObjectId.isValid(userId)) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid user_id'
+        })
+      }
+      filter.user_id = new ObjectId(userId)
+    }
+    return databaseService.sessions.find(filter).sort({ created_at: -1 }).toArray()
   }
 
   async listSessionsByCourse(courseId: string) {

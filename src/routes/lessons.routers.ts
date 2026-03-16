@@ -68,6 +68,12 @@ lessonsRouter.post('/', requireAdmin, wrapAsync(createLessonController))
  *         name: limit
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: user_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Lọc lessons theo ID người tạo
  *     responses:
  *       200:
  *         description: OK

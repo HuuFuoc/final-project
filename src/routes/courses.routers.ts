@@ -18,6 +18,13 @@ const coursesRouter = express.Router()
  *   get:
  *     summary: Lấy danh sách courses (published)
  *     tags: [Course]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Lọc courses theo ID người tạo
  *     responses:
  *       200:
  *         description: OK

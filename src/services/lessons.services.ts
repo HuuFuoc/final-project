@@ -51,16 +51,21 @@ class LessonService {
     return { ...lesson, _id: result.insertedId }
   }
 
-  async listLessonsPaged(page = 1, limit = 10) {
+  async listLessonsPaged(page = 1, limit = 10, userId?: string) {
     const skip = (page - 1) * limit
+    const filter: any = { isDeleted: false }
+    if (userId) {
+      if (!ObjectId.isValid(userId)) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid user_id'
+        })
+      }
+      filter.user_id = new ObjectId(userId)
+    }
     const [items, total] = await Promise.all([
-      databaseService.lessons
-        .find({ isDeleted: false })
-        .sort({ created_at: -1 })
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-      databaseService.lessons.countDocuments({ isDeleted: false })
+      databaseService.lessons.find(filter).sort({ created_at: -1 }).skip(skip).limit(limit).toArray(),
+      databaseService.lessons.countDocuments(filter)
     ])
     return {
       items,
@@ -109,15 +114,13 @@ class LessonService {
   async updateLesson(id: string, payload: Partial<Omit<Lesson, '_id'>>) {
     const lesson = await this.getLessonById(id)
     const update: any = {}
-    ;['name', 'content', 'slug', 'videoUrl', 'imageUrl', 'fullTime', 'positionOrder', 'lessonType'].forEach(
-      (key) => {
-        const k = key as keyof typeof payload
-        if (payload[k] !== undefined) {
-          // @ts-ignore
-          update[key] = payload[k]
-        }
+    ;['name', 'content', 'slug', 'videoUrl', 'imageUrl', 'fullTime', 'positionOrder', 'lessonType'].forEach((key) => {
+      const k = key as keyof typeof payload
+      if (payload[k] !== undefined) {
+        // @ts-ignore
+        update[key] = payload[k]
       }
-    )
+    })
     if (Object.keys(update).length === 0) return lesson
     update.updated_at = new Date()
     await databaseService.lessons.updateOne({ _id: lesson._id }, { $set: update })
@@ -126,10 +129,7 @@ class LessonService {
 
   async deleteLesson(id: string) {
     const lesson = await this.getLessonById(id)
-    await databaseService.lessons.updateOne(
-      { _id: lesson._id },
-      { $set: { isDeleted: true, updated_at: new Date() } }
-    )
+    await databaseService.lessons.updateOne({ _id: lesson._id }, { $set: { isDeleted: true, updated_at: new Date() } })
     return true
   }
 }

@@ -14,7 +14,8 @@ export const createLessonController = async (req: Request, res: Response) => {
 export const getLessonsPagedController = async (req: Request, res: Response) => {
   const page = parseInt((req.query.page as string) || '1', 10)
   const limit = parseInt((req.query.limit as string) || '10', 10)
-  const result = await lessonService.listLessonsPaged(page, limit)
+  const { user_id } = req.query as { user_id?: string }
+  const result = await lessonService.listLessonsPaged(page, limit, user_id)
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Lessons fetched successfully',

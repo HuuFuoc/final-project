@@ -4,7 +4,8 @@ import HTTP_STATUS from '../constants/httpStatus'
 import { getAccessTokenPayload } from '../utils/jwt'
 
 export const getCoursesController = async (req: Request, res: Response) => {
-  const result = await courseService.listCourses()
+  const { user_id } = req.query as { user_id?: string }
+  const result = await courseService.listCourses(user_id)
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Courses fetched successfully',

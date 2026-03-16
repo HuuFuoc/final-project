@@ -7,11 +7,18 @@ import { CourseStatus } from '../constants/enums'
 import Enrollment from '../models/schemas/Enrollment.schema'
 
 class CourseService {
-  async listCourses() {
-    return databaseService.courses
-      .find({ isDeleted: false, status: CourseStatus.Published })
-      .sort({ created_at: -1 })
-      .toArray()
+  async listCourses(userId?: string) {
+    const filter: any = { isDeleted: false, status: CourseStatus.Published }
+    if (userId) {
+      if (!ObjectId.isValid(userId)) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: 'Invalid user_id'
+        })
+      }
+      filter.user_id = new ObjectId(userId)
+    }
+    return databaseService.courses.find(filter).sort({ created_at: -1 }).toArray()
   }
 
   async getCourseById(id: string) {

@@ -12,7 +12,8 @@ export const createSessionController = async (req: Request, res: Response) => {
 }
 
 export const getSessionsController = async (req: Request, res: Response) => {
-  const result = await sessionService.listAllSessions()
+  const { user_id } = req.query as { user_id?: string }
+  const result = await sessionService.listAllSessions(user_id)
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Sessions fetched successfully',
