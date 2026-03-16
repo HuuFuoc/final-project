@@ -30,3 +30,40 @@ export interface GetInstructorRequestsQuery {
   status?: InstructorRequestStatus
 }
 
+export type InstructorDashboardRange = '7d' | '30d' | '90d' | 'all'
+
+export interface GetInstructorDashboardSummaryQuery {
+  range?: InstructorDashboardRange
+}
+
+export interface InstructorDashboardOverview {
+  totalCoursesCreated: number
+  totalPublishedCourses: number
+  totalDraftCourses: number
+  totalArchivedCourses: number
+  totalPaidOrders: number
+  grossRevenue: number
+  netRevenue: number
+}
+
+export interface InstructorDashboardTopCourse {
+  courseId: string
+  courseName: string
+  totalPaidOrders: number
+  grossRevenue: number
+  netRevenue: number
+}
+
+export interface InstructorDashboardTrendPoint {
+  date: string
+  totalPaidOrders: number
+  grossRevenue: number
+  netRevenue: number
+}
+
+export interface InstructorDashboardSummaryResponse {
+  overview: InstructorDashboardOverview
+  topCourses: InstructorDashboardTopCourse[]
+  trend: InstructorDashboardTrendPoint[]
+}
+

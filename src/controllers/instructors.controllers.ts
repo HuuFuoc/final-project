@@ -3,6 +3,7 @@ import HTTP_STATUS from '../constants/httpStatus'
 import instructorService from '../services/instructors.services'
 import { getAccessTokenPayload } from '../utils/jwt'
 import {
+  GetInstructorDashboardSummaryQuery,
   GetInstructorRequestsQuery,
   ReviewInstructorRequestReqBody,
   UpdateInstructorReqBody
@@ -105,6 +106,18 @@ export const getCourseSalesSummaryController = async (req: Request, res: Respons
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Get instructor course sales summary successfully',
+    data: result
+  })
+}
+
+export const getDashboardSummaryController = async (req: Request, res: Response) => {
+  const { user_id } = getAccessTokenPayload(req)
+  const query = req.query as GetInstructorDashboardSummaryQuery
+  const result = await instructorService.getDashboardSummary(user_id, query.range)
+
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: INSTRUCTORS_MESSAGES.DASHBOARD_SUMMARY_FETCHED,
     data: result
   })
 }
