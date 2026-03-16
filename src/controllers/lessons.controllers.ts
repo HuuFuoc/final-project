@@ -2,8 +2,38 @@ import { Request, Response } from 'express'
 import lessonService from '../services/lessons.services'
 import HTTP_STATUS from '../constants/httpStatus'
 
+const normalizeLessonPayload = (body: Record<string, any>) => {
+  const normalized = { ...body }
+  normalized.imageUrl = body.imageUrl ?? body.image ?? body.thumbnail ?? body.image_url
+  normalized.videoUrl = body.videoUrl ?? body.video ?? body.video_url
+
+  if (normalized.fullTime !== undefined) {
+    const parsed = Number(normalized.fullTime)
+    normalized.fullTime = Number.isNaN(parsed) ? normalized.fullTime : parsed
+  }
+
+  if (normalized.positionOrder !== undefined) {
+    const parsed = Number(normalized.positionOrder)
+    normalized.positionOrder = Number.isNaN(parsed) ? normalized.positionOrder : parsed
+  }
+
+  return normalized
+}
+
 export const createLessonController = async (req: Request, res: Response) => {
-  const result = await lessonService.createLesson(req.body)
+  const body = normalizeLessonPayload(req.body)
+  const result = await lessonService.createLesson({
+    session_id: body.session_id,
+    course_id: body.course_id,
+    user_id: body.user_id,
+    name: body.name,
+    content: body.content,
+    slug: body.slug,
+    videoUrl: body.videoUrl,
+    imageUrl: body.imageUrl,
+    fullTime: body.fullTime,
+    positionOrder: body.positionOrder
+  })
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
     message: 'Lesson created successfully',
@@ -45,7 +75,7 @@ export const getLessonByIdController = async (req: Request, res: Response) => {
 
 export const updateLessonController = async (req: Request, res: Response) => {
   const { lessonId } = req.params as { lessonId: string }
-  const result = await lessonService.updateLesson(lessonId, req.body)
+  const result = await lessonService.updateLesson(lessonId, normalizeLessonPayload(req.body))
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Lesson updated successfully',
