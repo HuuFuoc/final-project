@@ -29,13 +29,6 @@ export enum CourseTargetAudience {
   All = 'all'
 }
 
-export enum LessonType {
-  Video = 'video',
-  Text = 'text',
-  Quiz = 'quiz',
-  Assignment = 'assignment'
-}
-
 export enum CartStatus {
   Pending = 'pending',
   CheckedOut = 'checked_out',

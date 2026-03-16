@@ -1,5 +1,4 @@
 import { ObjectId } from 'mongodb'
-import { LessonType } from '../../constants/enums'
 
 interface LessonTypeInput {
   _id?: ObjectId
@@ -9,7 +8,6 @@ interface LessonTypeInput {
   name: string
   content?: string
   slug?: string
-  lessonType?: LessonType
   videoUrl?: string
   imageUrl?: string
   fullTime?: number
@@ -27,7 +25,6 @@ export default class Lesson {
   name: string
   content: string
   slug: string
-  lessonType: LessonType
   videoUrl: string
   imageUrl: string
   fullTime: number
@@ -45,7 +42,6 @@ export default class Lesson {
     this.name = lesson.name
     this.content = lesson.content || ''
     this.slug = lesson.slug || ''
-    this.lessonType = lesson.lessonType ?? LessonType.Video
     this.videoUrl = lesson.videoUrl || ''
     this.imageUrl = lesson.imageUrl || ''
     this.fullTime = lesson.fullTime ?? 0

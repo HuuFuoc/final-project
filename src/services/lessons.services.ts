@@ -3,7 +3,6 @@ import databaseService from './database.services'
 import Lesson from '../models/schemas/Lesson.schema'
 import HTTP_STATUS from '../constants/httpStatus'
 import { ErrorWithStatus } from '../models/Error'
-import { LessonType } from '../constants/enums'
 
 class LessonService {
   async createLesson(payload: {
@@ -13,7 +12,6 @@ class LessonService {
     name: string
     content?: string
     slug?: string
-    lessonType?: LessonType
     videoUrl?: string
     imageUrl?: string
     fullTime?: number
@@ -40,7 +38,6 @@ class LessonService {
       name: name.trim(),
       content: payload.content,
       slug: payload.slug,
-      lessonType: payload.lessonType,
       videoUrl: payload.videoUrl,
       imageUrl: payload.imageUrl,
       fullTime: payload.fullTime,
@@ -114,7 +111,7 @@ class LessonService {
   async updateLesson(id: string, payload: Partial<Omit<Lesson, '_id'>>) {
     const lesson = await this.getLessonById(id)
     const update: any = {}
-    ;['name', 'content', 'slug', 'videoUrl', 'imageUrl', 'fullTime', 'positionOrder', 'lessonType'].forEach((key) => {
+    ;['name', 'content', 'slug', 'videoUrl', 'imageUrl', 'fullTime', 'positionOrder'].forEach((key) => {
       const k = key as keyof typeof payload
       if (payload[k] !== undefined) {
         // @ts-ignore
