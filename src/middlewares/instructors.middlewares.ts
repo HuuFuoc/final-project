@@ -105,6 +105,21 @@ export const instructorRequestStatusValidator = validate(
   )
 )
 
+export const dashboardSummaryRangeValidator = validate(
+  checkSchema(
+    {
+      range: {
+        optional: true,
+        isIn: {
+          options: [['7d', '30d', '90d', 'all']],
+          errorMessage: INSTRUCTORS_MESSAGES.DASHBOARD_RANGE_IS_INVALID
+        }
+      }
+    },
+    ['query']
+  )
+)
+
 export const reviewInstructorRequestValidator = validate(
   checkSchema(
     {

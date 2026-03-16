@@ -1,6 +1,7 @@
 import express from 'express'
 import { wrapAsync } from '../utils/handlers'
 import {
+  getDashboardSummaryController,
   deleteInstructorController,
   getCourseSalesSummaryController,
   getInstructorByIdController,
@@ -11,6 +12,7 @@ import {
   updateInstructorController
 } from '../controllers/instructors.controllers'
 import {
+  dashboardSummaryRangeValidator,
   instructorIdValidator,
   instructorRequestIdValidator,
   instructorRequestStatusValidator,
@@ -73,6 +75,32 @@ instructorsRouter.get('/order-history', requireUser, wrapAsync(getOrderHistoryCo
  *       200: { description: OK }
  */
 instructorsRouter.get('/course-sales-summary', requireUser, wrapAsync(getCourseSalesSummaryController))
+
+/**
+ * @openapi
+ * /api/instructor/dashboard-summary:
+ *   get:
+ *     summary: Tong hop KPI dashboard cua instructor dang nhap
+ *     tags: [Instructor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: range
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [7d, 30d, 90d, all]
+ *           default: 30d
+ *     responses:
+ *       200: { description: OK }
+ */
+instructorsRouter.get(
+  '/dashboard-summary',
+  requireUser,
+  dashboardSummaryRangeValidator,
+  wrapAsync(getDashboardSummaryController)
+)
 
 /**
  * @openapi

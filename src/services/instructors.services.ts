@@ -4,10 +4,12 @@ import HTTP_STATUS from '../constants/httpStatus'
 import databaseService from './database.services'
 import Instructor from '../models/schemas/Instructor.schema'
 import InstructorRequest from '../models/schemas/InstructorRequest.schema'
-import { InstructorRequestStatus, OrderStatus, USER_ROLE } from '../constants/enums'
+import { CourseStatus, InstructorRequestStatus, OrderStatus, USER_ROLE } from '../constants/enums'
 import {
   BecomeInstructorReqBody,
   GetInstructorRequestsQuery,
+  InstructorDashboardRange,
+  InstructorDashboardSummaryResponse,
   ReviewInstructorRequestReqBody,
   UpdateInstructorReqBody
 } from '../models/requests/Instructor.requests'
@@ -16,6 +18,24 @@ import { INSTRUCTORS_MESSAGES, USERS_MESSAGES } from '../constants/messages'
 class InstructorService {
   private isApprovalDecision(decision: ReviewInstructorRequestReqBody['decision']) {
     return decision === 'approve' || decision === 'accept'
+  }
+
+  private resolveDashboardRangeStartDate(range: InstructorDashboardRange | undefined) {
+    const normalizedRange: InstructorDashboardRange = range ?? '30d'
+    if (normalizedRange === 'all') {
+      return null
+    }
+
+    const dayMap: Record<Exclude<InstructorDashboardRange, 'all'>, number> = {
+      '7d': 7,
+      '30d': 30,
+      '90d': 90
+    }
+    const days = dayMap[normalizedRange]
+    const fromDate = new Date()
+    fromDate.setUTCHours(0, 0, 0, 0)
+    fromDate.setUTCDate(fromDate.getUTCDate() - (days - 1))
+    return fromDate
   }
 
   async listInstructors() {
@@ -258,6 +278,174 @@ class InstructorService {
     ])
 
     return true
+  }
+
+  async getDashboardSummary(
+    instructorId: string,
+    range: InstructorDashboardRange | undefined
+  ): Promise<InstructorDashboardSummaryResponse> {
+    if (!ObjectId.isValid(instructorId)) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: USERS_MESSAGES.INVALID_USER_ID
+      })
+    }
+
+    const instructorObjectId = new ObjectId(instructorId)
+    const fromDate = this.resolveDashboardRangeStartDate(range)
+    const ordersCol = process.env.DB_ORDERS_COLLECTION || 'orders'
+    const coursesCol = process.env.DB_COURSES_COLLECTION || 'courses'
+    const cartsCol = process.env.DB_CARTS_COLLECTION || 'carts'
+
+    const baseRevenuePipeline: any[] = [
+      {
+        $lookup: {
+          from: ordersCol,
+          localField: 'order_id',
+          foreignField: '_id',
+          as: 'orderDoc'
+        }
+      },
+      { $unwind: '$orderDoc' },
+      { $match: { 'orderDoc.status': OrderStatus.Paid } },
+      {
+        $lookup: {
+          from: coursesCol,
+          localField: 'course_id',
+          foreignField: '_id',
+          as: 'courseDoc'
+        }
+      },
+      { $unwind: '$courseDoc' },
+      { $match: { 'courseDoc.user_id': instructorObjectId } },
+      {
+        $lookup: {
+          from: cartsCol,
+          localField: 'cart_id',
+          foreignField: '_id',
+          as: 'cartDoc'
+        }
+      },
+      {
+        $addFields: {
+          cartDoc: { $arrayElemAt: ['$cartDoc', 0] }
+        }
+      },
+      {
+        $addFields: {
+          price: { $ifNull: ['$cartDoc.price', '$courseDoc.price'] },
+          discount: { $ifNull: ['$cartDoc.discount', { $ifNull: ['$courseDoc.discount', 0] }] },
+          orderDate: { $ifNull: ['$orderDoc.orderDate', '$orderDoc.created_at'] }
+        }
+      },
+      {
+        $addFields: {
+          finalPrice: { $max: [0, { $subtract: [{ $ifNull: ['$price', 0] }, { $ifNull: ['$discount', 0] }] }] },
+          netRevenue: { $multiply: [{ $max: [0, { $subtract: [{ $ifNull: ['$price', 0] }, { $ifNull: ['$discount', 0] }] }] }, 0.5] }
+        }
+      }
+    ]
+
+    if (fromDate) {
+      baseRevenuePipeline.push({
+        $match: {
+          orderDate: { $gte: fromDate }
+        }
+      })
+    }
+
+    const [courseOverviewRows, revenueOverviewRows, topCoursesRows, trendRows] = await Promise.all([
+      databaseService.courses
+        .aggregate([
+          { $match: { user_id: instructorObjectId, isDeleted: { $ne: true } } },
+          {
+            $group: {
+              _id: null,
+              totalCoursesCreated: { $sum: 1 },
+              totalPublishedCourses: { $sum: { $cond: [{ $eq: ['$status', CourseStatus.Published] }, 1, 0] } },
+              totalDraftCourses: { $sum: { $cond: [{ $eq: ['$status', CourseStatus.Draft] }, 1, 0] } },
+              totalArchivedCourses: { $sum: { $cond: [{ $eq: ['$status', CourseStatus.Archived] }, 1, 0] } }
+            }
+          }
+        ])
+        .toArray(),
+      databaseService.order_logs
+        .aggregate([
+          ...baseRevenuePipeline,
+          {
+            $group: {
+              _id: null,
+              totalPaidOrders: { $sum: 1 },
+              grossRevenue: { $sum: '$finalPrice' },
+              netRevenue: { $sum: '$netRevenue' }
+            }
+          }
+        ])
+        .toArray(),
+      databaseService.order_logs
+        .aggregate([
+          ...baseRevenuePipeline,
+          {
+            $group: {
+              _id: '$course_id',
+              courseName: { $first: '$courseDoc.name' },
+              totalPaidOrders: { $sum: 1 },
+              grossRevenue: { $sum: '$finalPrice' },
+              netRevenue: { $sum: '$netRevenue' }
+            }
+          },
+          { $sort: { grossRevenue: -1 } },
+          { $limit: 5 }
+        ])
+        .toArray(),
+      databaseService.order_logs
+        .aggregate([
+          ...baseRevenuePipeline,
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$orderDate'
+                }
+              },
+              totalPaidOrders: { $sum: 1 },
+              grossRevenue: { $sum: '$finalPrice' },
+              netRevenue: { $sum: '$netRevenue' }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ])
+        .toArray()
+    ])
+
+    const courseOverview = courseOverviewRows[0]
+    const revenueOverview = revenueOverviewRows[0]
+
+    return {
+      overview: {
+        totalCoursesCreated: courseOverview?.totalCoursesCreated ?? 0,
+        totalPublishedCourses: courseOverview?.totalPublishedCourses ?? 0,
+        totalDraftCourses: courseOverview?.totalDraftCourses ?? 0,
+        totalArchivedCourses: courseOverview?.totalArchivedCourses ?? 0,
+        totalPaidOrders: revenueOverview?.totalPaidOrders ?? 0,
+        grossRevenue: revenueOverview?.grossRevenue ?? 0,
+        netRevenue: revenueOverview?.netRevenue ?? 0
+      },
+      topCourses: topCoursesRows.map((row: any) => ({
+        courseId: row._id?.toString(),
+        courseName: row.courseName || '',
+        totalPaidOrders: row.totalPaidOrders ?? 0,
+        grossRevenue: row.grossRevenue ?? 0,
+        netRevenue: row.netRevenue ?? 0
+      })),
+      trend: trendRows.map((row: any) => ({
+        date: row._id,
+        totalPaidOrders: row.totalPaidOrders ?? 0,
+        grossRevenue: row.grossRevenue ?? 0,
+        netRevenue: row.netRevenue ?? 0
+      }))
+    }
   }
 
   /**
