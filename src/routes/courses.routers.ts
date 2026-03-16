@@ -85,6 +85,12 @@ coursesRouter.get('/:courseId', wrapAsync(getCourseByIdController))
  *                 type: number
  *               discount:
  *                 type: number
+ *               imageUrl:
+ *                 type: string
+ *               imageUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       201:
  *         description: Created

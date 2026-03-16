@@ -59,6 +59,8 @@ class CourseService {
     price: number
     discount?: number
     status?: CourseStatus
+    imageUrl?: string
+    imageUrls?: string[]
   }) {
     const { name, user_id, category_id, price } = payload
     if (!name || !name.trim()) {
@@ -86,6 +88,8 @@ class CourseService {
       category_id: new ObjectId(category_id),
       content: payload.content || '',
       slug: payload.slug || '',
+      imageUrl: payload.imageUrl || '',
+      imageUrls: payload.imageUrls,
       price,
       discount: payload.discount ?? 0, // TODO: hiện đang hiểu discount là số tiền giảm trực tiếp
       status: payload.status ?? CourseStatus.Published

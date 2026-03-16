@@ -32,7 +32,9 @@ export const createCourseController = async (req: Request, res: Response) => {
     slug: body.slug,
     price: body.price,
     discount: body.discount,
-    status: body.status
+    status: body.status,
+    imageUrl: body.imageUrl,
+    imageUrls: body.imageUrls
   })
   res.status(HTTP_STATUS.CREATED).json({
     success: true,
