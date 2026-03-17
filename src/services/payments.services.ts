@@ -110,6 +110,41 @@ class PaymentService {
       .toArray()
   }
 
+  async getAdminFinancialOverview() {
+    const [paymentOverviewRows, totalPaidOrders] = await Promise.all([
+      databaseService.payments
+        .aggregate([
+          {
+            $match: {
+              status: PaymentStatus.Completed,
+              isDeleted: { $ne: true }
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: { $ifNull: ['$amount', 0] } },
+              totalProfit: { $sum: { $ifNull: ['$organizationShare', 0] } },
+              totalCompletedPayments: { $sum: 1 }
+            }
+          }
+        ])
+        .toArray(),
+      databaseService.orders.countDocuments({
+        status: OrderStatus.Paid
+      })
+    ])
+
+    const paymentOverview = paymentOverviewRows[0]
+
+    return {
+      totalRevenue: paymentOverview?.totalRevenue ?? 0,
+      totalProfit: paymentOverview?.totalProfit ?? 0,
+      totalCompletedPayments: paymentOverview?.totalCompletedPayments ?? 0,
+      totalPaidOrders
+    }
+  }
+
   private async grantOwnership(orderId: ObjectId, paymentId: ObjectId | null) {
     const logs = await databaseService.order_logs.find({ order_id: orderId }).toArray()
 
