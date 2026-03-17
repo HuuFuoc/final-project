@@ -3,6 +3,7 @@ import paymentService from '../services/payments.services'
 import HTTP_STATUS from '../constants/httpStatus'
 import { getAccessTokenPayload } from '../utils/jwt'
 import { PaymentStatus } from '../constants/enums'
+import { PAYMENTS_MESSAGES } from '../constants/messages'
 
 export const createPaymentFromOrderController = async (req: Request, res: Response) => {
   const { user_id } = getAccessTokenPayload(req)
@@ -42,6 +43,15 @@ export const updatePaymentStatusController = async (req: Request, res: Response)
   res.status(HTTP_STATUS.OK).json({
     success: true,
     message: 'Payment status updated successfully',
+    data: result
+  })
+}
+
+export const getAdminFinancialOverviewController = async (req: Request, res: Response) => {
+  const result = await paymentService.getAdminFinancialOverview()
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: PAYMENTS_MESSAGES.ADMIN_FINANCIAL_OVERVIEW_FETCHED,
     data: result
   })
 }

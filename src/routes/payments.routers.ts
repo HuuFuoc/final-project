@@ -2,12 +2,13 @@ import express from 'express'
 import { wrapAsync } from '../utils/handlers'
 import {
   createPaymentFromOrderController,
+  getAdminFinancialOverviewController,
   getPaymentByIdController,
   getPaymentHistoryController,
   stripeWebhookController,
   updatePaymentStatusController
 } from '../controllers/payments.controllers'
-import { requireAdmin, requireUser } from '../middlewares/users.middlewares'
+import { requireAdmin, requireOnlyAdmin, requireUser } from '../middlewares/users.middlewares'
 
 const paymentsRouter = express.Router()
 
@@ -74,6 +75,20 @@ paymentsRouter.get('/history/:userId', requireUser, wrapAsync(getPaymentHistoryC
  *         description: OK
  */
 paymentsRouter.post('/stripe-webhook', wrapAsync(stripeWebhookController))
+
+/**
+ * @openapi
+ * /api/payment/admin/financial-overview:
+ *   get:
+ *     summary: Tong quan tai chinh toan he thong (admin)
+ *     tags: [Payment]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+paymentsRouter.get('/admin/financial-overview', requireOnlyAdmin, wrapAsync(getAdminFinancialOverviewController))
 
 /**
  * @openapi

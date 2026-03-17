@@ -314,6 +314,7 @@ export const PAYMENTS_MESSAGES = {
   NOT_FOUND: 'Payment not found',
   CREATED: 'Payment created successfully',
   UPDATED: 'Payment status updated successfully',
+  ADMIN_FINANCIAL_OVERVIEW_FETCHED: 'Admin financial overview fetched successfully',
   PAYMENT_NO_IS_REQUIRED: 'Payment number is required',
   AMOUNT_MUST_BE_A_NUMBER: 'Amount must be a number',
   AMOUNT_MUST_BE_POSITIVE: 'Amount must be positive',
