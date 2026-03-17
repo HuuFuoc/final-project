@@ -86,6 +86,7 @@ export const COURSES_MESSAGES = {
   CREATED: 'Course created successfully',
   UPDATED: 'Course updated successfully',
   DELETED: 'Course deleted successfully',
+  CANNOT_DELETE_PURCHASED: 'Cannot delete course that has been purchased by users',
   NAME_IS_REQUIRED: 'Course name is required',
   NAME_MUST_BE_A_STRING: 'Course name must be a string',
   SLUG_IS_REQUIRED: 'Slug is required',
@@ -196,6 +197,8 @@ export const CONSULTANTS_MESSAGES = {
 } as const
 
 export const INSTRUCTORS_MESSAGES = {
+  DASHBOARD_SUMMARY_FETCHED: 'Instructor dashboard summary fetched successfully',
+  DASHBOARD_RANGE_IS_INVALID: 'Dashboard range is invalid',
   VALIDATION_ERROR: 'Validation error',
   NOT_FOUND: 'Instructor not found',
   CREATED: 'Instructor created successfully',
@@ -208,12 +211,10 @@ export const INSTRUCTORS_MESSAGES = {
   REQUEST_NOT_FOUND: 'Instructor request not found',
   REQUESTS_FETCHED: 'Instructor requests fetched successfully',
   REQUEST_REVIEWED: 'Instructor request reviewed successfully',
-  DASHBOARD_SUMMARY_FETCHED: 'Instructor dashboard summary fetched successfully',
   FULL_NAME_IS_REQUIRED: 'Full name is required',
   EMAIL_IS_REQUIRED: 'Email is required',
   EMAIL_IS_INVALID: 'Email is invalid',
   STATUS_IS_INVALID: 'Status must be pending, approved or rejected',
-  DASHBOARD_RANGE_IS_INVALID: 'Range must be one of 7d, 30d, 90d, all',
   DECISION_IS_REQUIRED: 'Decision is required',
   DECISION_IS_INVALID: 'Decision must be approve/accept or reject/deny',
   INVALID_ID: 'Invalid instructor id',

@@ -161,7 +161,12 @@ export const registerValidator = validate(
       email: emailSchema,
       password: passwordSchema,
       confirm_password: confirmPasswordSchema,
-      date_of_birth: dateOfBirthSchema
+      date_of_birth: dateOfBirthSchema,
+      avatar: {
+        optional: true,
+        isString: { errorMessage: 'Avatar must be a string' },
+        trim: true
+      }
     },
     ['body']
   )

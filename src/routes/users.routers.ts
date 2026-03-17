@@ -61,20 +61,54 @@ userRouter.post('/login', loginValidator, wrapAsync(loginController))
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *               - confirm_password
+ *               - date_of_birth
  *             properties:
  *               name:
  *                 type: string
+ *                 example: Nguyen Van A
  *               email:
  *                 type: string
+ *                 example: nguyenvana@example.com
  *               password:
  *                 type: string
+ *                 example: Password123!
  *               confirm_password:
  *                 type: string
+ *                 example: Password123!
  *               date_of_birth:
  *                 type: string
+ *                 example: "2000-01-01"
+ *               avatar:
+ *                 type: string
+ *                 example: ""
  *     responses:
  *       201:
- *         description: Thành công
+ *         description: Đăng ký thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Register successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     access_token:
+ *                       type: string
+ *                     refresh_token:
+ *                       type: string
+ *       422:
+ *         description: Dữ liệu không hợp lệ
  */
 userRouter.post('/register', registerValidator, wrapAsync(registerController))
 

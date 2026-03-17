@@ -183,6 +183,16 @@ class CourseService {
         message: 'Course not found'
       })
     }
+    const enrollmentCount = await databaseService.enrollments.countDocuments({
+      course_id: existing._id,
+      isDeleted: false
+    })
+    if (enrollmentCount > 0) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: 'Cannot delete course that has been purchased by users'
+      })
+    }
     await databaseService.courses.updateOne(
       { _id: existing._id },
       { $set: { isDeleted: true, updated_at: new Date() } }
