@@ -155,3 +155,11 @@ export const getUserByIdController = async (
     data: result
   })
 }
+
+export const getAllUsersController = async (req: Request, res: Response, next: NextFunction) => {
+  const result = await userService.getAllUsers()
+  return res.status(HTTP_STATUS.OK).json({
+    message: USERS_MESSAGES.GET_ALL_USERS_SUCCESS,
+    data: result
+  })
+}

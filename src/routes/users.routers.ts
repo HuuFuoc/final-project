@@ -6,6 +6,7 @@ import {
   emailVerifyTokenValidator,
   loginValidator,
   refreshTokenValidator,
+  requireOnlyAdmin,
   registerValidator,
   updateMeValidator
 } from '../middlewares/users.middlewares'
@@ -13,6 +14,7 @@ import {
   changePasswordController,
   becomeInstructorController,
   emailVerifyController,
+  getAllUsersController,
   getMeController,
   getUserByIdController,
   loginController,
@@ -345,6 +347,77 @@ userRouter.post(
   becomeInstructorValidator,
   wrapAsync(becomeInstructorController)
 )
+/**
+ * @openapi
+ * /user/all:
+ *   get:
+ *     summary: Admin gets all users
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Users fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Get all users success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: 64f1a2b3c4d5e6f7a8b9c0d1
+ *                       name:
+ *                         type: string
+ *                         example: Nguyen Van A
+ *                       email:
+ *                         type: string
+ *                         example: nguyenvana@example.com
+ *                       role:
+ *                         type: number
+ *                         example: 2
+ *                       verify:
+ *                         type: number
+ *                         example: 1
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2026-03-17T03:20:00.000Z
+ *                       updated_at:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2026-03-17T03:20:00.000Z
+ *             example:
+ *               message: Get all users success
+ *               data:
+ *                 - _id: 64f1a2b3c4d5e6f7a8b9c0d1
+ *                   name: Nguyen Van A
+ *                   email: nguyenvana@example.com
+ *                   role: 2
+ *                   verify: 1
+ *                   created_at: 2026-03-17T03:20:00.000Z
+ *                   updated_at: 2026-03-17T03:20:00.000Z
+ *                 - _id: 64f1a2b3c4d5e6f7a8b9c0d2
+ *                   name: Tran Thi B
+ *                   email: tranthib@example.com
+ *                   role: 0
+ *                   verify: 1
+ *                   created_at: 2026-03-16T10:11:12.000Z
+ *                   updated_at: 2026-03-17T08:00:00.000Z
+ *       401:
+ *         description: Unauthorized or invalid token
+ *       403:
+ *         description: Admin permission required
+ */
+userRouter.get('/all', requireOnlyAdmin, wrapAsync(getAllUsersController))
 /**
  * @openapi
  * /user/{id}:
