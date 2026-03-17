@@ -326,3 +326,17 @@ export const requireStaffOrAdmin = [
     next()
   }
 ]
+
+export const requireOnlyAdmin = [
+  accessTokenValidator,
+  (req: Request, res: Response, next: NextFunction) => {
+    const payload = getAccessTokenPayload(req)
+    if (payload.role !== USER_ROLE.Admin) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.FORBBIDEN,
+        message: 'Admin permission required'
+      })
+    }
+    next()
+  }
+]

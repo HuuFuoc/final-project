@@ -306,6 +306,22 @@ class UserService {
     }
     return user
   }
+
+  async getAllUsers() {
+    return databaseService.users
+      .find(
+        {},
+        {
+          projection: {
+            password: 0,
+            email_verify_token: 0,
+            forgot_password_token: 0
+          }
+        }
+      )
+      .sort({ created_at: -1 })
+      .toArray()
+  }
 }
 
 const userService = new UserService()

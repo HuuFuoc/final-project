@@ -1,4 +1,5 @@
 export const USERS_MESSAGES = {
+  GET_ALL_USERS_SUCCESS: 'Get all users success',
   GET_USER_BY_ID_SUCCESS: 'Get user by id success',
   VALIDATION_ERROR: 'Validation error',
   NAME_IS_REQUIRED: 'Name is required',
