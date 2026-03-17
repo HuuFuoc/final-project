@@ -124,7 +124,15 @@ class PaymentService {
             $group: {
               _id: null,
               totalRevenue: { $sum: { $ifNull: ['$amount', 0] } },
-              totalProfit: { $sum: { $ifNull: ['$organizationShare', 0] } },
+              totalProfit: {
+                $sum: {
+                  $cond: [
+                    { $gt: [{ $ifNull: ['$organizationShare', 0] }, 0] },
+                    '$organizationShare',
+                    { $multiply: [{ $ifNull: ['$amount', 0] }, 0.5] }
+                  ]
+                }
+              },
               totalCompletedPayments: { $sum: 1 }
             }
           }
