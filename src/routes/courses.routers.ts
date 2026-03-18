@@ -73,6 +73,43 @@ coursesRouter.get('/myCourses', requireUser, wrapAsync(getMyCoursesController))
  *     responses:
  *       200:
  *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       categoryId:
+ *                         type: string
+ *                         nullable: true
+ *                       status:
+ *                         type: string
+ *                       price:
+ *                         type: number
+ *                       discount:
+ *                         type: number
+ *                       imageUrl:
+ *                         type: string
+ *                       riskLevel:
+ *                         type: string
+ *                       isPurchased:
+ *                         type: boolean
+ *                       recommendationScore:
+ *                         type: number
+ *                       recommendationReason:
+ *                         type: string
  */
 coursesRouter.get('/recommendations/me', requireUser, wrapAsync(getMyCourseRecommendationsController))
 
