@@ -4,6 +4,7 @@ import {
   createCourseController,
   deleteCourseController,
   getCourseByIdController,
+  getMyCourseRecommendationsController,
   getCoursesController,
   getMyCoursesController,
   updateCourseController
@@ -44,6 +45,36 @@ coursesRouter.get('/', wrapAsync(getCoursesController))
  *         description: OK
  */
 coursesRouter.get('/myCourses', requireUser, wrapAsync(getMyCoursesController))
+
+/**
+ * @openapi
+ * /api/course/recommendations/me:
+ *   get:
+ *     summary: Lay danh sach khoa hoc goi y cho user hien tai
+ *     tags: [Course]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 4
+ *           maximum: 20
+ *         description: So luong khoa hoc goi y
+ *       - in: query
+ *         name: includeReasons
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Co tra ve recommendationReason hay khong
+ *     responses:
+ *       200:
+ *         description: OK
+ */
+coursesRouter.get('/recommendations/me', requireUser, wrapAsync(getMyCourseRecommendationsController))
 
 /**
  * @openapi

@@ -73,3 +73,24 @@ export const getMyCoursesController = async (req: Request, res: Response) => {
     data: result
   })
 }
+
+export const getMyCourseRecommendationsController = async (req: Request, res: Response) => {
+  const { user_id } = getAccessTokenPayload(req)
+  const rawLimit = req.query.limit as string | undefined
+  const rawIncludeReasons = req.query.includeReasons as string | undefined
+
+  const parsedLimit = rawLimit ? Number(rawLimit) : 4
+  const limit = Number.isFinite(parsedLimit) ? parsedLimit : 4
+  const includeReasons = rawIncludeReasons === 'true' || rawIncludeReasons === '1'
+
+  const result = await courseService.getRecommendationsForCurrentUser(user_id, {
+    limit,
+    includeReasons
+  })
+
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: 'Recommended courses fetched successfully',
+    data: result
+  })
+}
